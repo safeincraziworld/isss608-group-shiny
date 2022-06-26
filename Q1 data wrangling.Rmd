@@ -1,0 +1,115 @@
+---
+title: "Q1 trial"
+author: "Leslie Long Nu"
+date: '2022-06-26'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# import libraries
+
+```{r library}
+packages = c('tidyverse', 'ggplot2', 'lubridate')
+for (p in packages){
+  if(!require(p, character.only = T)){
+    install.packages(p)
+  }
+  library(p,character.only = T)
+}
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+# read data
+
+```{r read data}
+#checkin <- read_csv('rawdata/CheckinJournal.csv')
+#travel <- read_csv('rawdata/TravelJournal.csv')
+pubs <- readRDS('rawdata/pubs.rds')
+restaurants <- readRDS('rawdata/restaurants.rds')
+```
+
+# data wrangling 
+
+```{r pub& restaurant}
+restaurants$hourlyCost <- NA
+restaurants$locationType <- 'restaurant'
+pubs$locationType <- 'pub'
+restaurants <- rename(restaurants, locationId = restaurantId)
+pubs <- rename(pubs, locationId= pubId)
+all <- rbind(restaurants, pubs)
+```
+
+```{r}
+all <- all %>%
+  mutate(weekday = wday(checkInTime, label= TRUE),
+         date = date(checkInTime))
+
+pubs <- all %>%
+  filter(locationType == 'pub')
+
+restaurants <- all %>%
+  filter(locationType == 'restaurant')
+```
+
+
+# visualization
+
+```{r weekday plot}
+# visit records by weekday 
+all_wday <- all %>%
+  group_by(locationId, weekday) %>%
+  summarise(visits = n(),
+            revenue = sum(spending),
+            locationType = first(locationType))
+
+restaurant_wday <- all %>%
+  group_by(locationId, weekday) %>%
+  summarise(visits = n(),
+            revenue = sum(spending),
+            locationType = locationType)
+# filter = locationId & location type
+```
+
+
+```{r save rds}
+saveRDS(all, 'group-shiny/data/all.rds')
+saveRDS(all_wday, 'group-shiny/data/all_wday.rds')
+saveRDS(restaurants, 'group-shiny/data/restaurants.rds')
+saveRDS(pubs, 'group-shiny/data/pubs.rds')
+```
+
+```{r}
+lvl = c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
+
+all1 <- all %>%
+  group_by(locationType, locationId, date) %>%
+  summarise(visits= n(),
+            weekday = first(weekday)) %>%
+  ungroup() 
+
+all_mean <- all1 %>%
+  group_by(locationId, weekday) %>%
+  summarise(meanv = mean(visits)) %>%
+  ungroup()
+
+all1 %>%
+  filter(locationType == 'restaurant' &
+               locationId == 447) %>%
+  ggplot(aes(x= date,
+             y = visits)) +
+  geom_line() +
+  geom_hline(data = all_mean %>%
+               filter(locationId==447),
+             aes(yintercept = meanv),
+             linetype= 'dashed',
+             size = .4) +
+  facet_grid(~ factor(weekday, levels = lvl)) +
+  theme_bw()
+  
+```
+
