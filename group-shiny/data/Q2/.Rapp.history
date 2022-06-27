@@ -1,0 +1,2 @@
+load("/Users/raunakkapur/Desktop/SMU/Courses/Visual Analytics/raunakkapur/isss608-group-website/Project/data/Q2/StatusLogDetails.rds")
+load("/Users/raunakkapur/Desktop/SMU/Courses/Visual Analytics/raunakkapur/isss608-group-website/Project/data/Q2/StatusLogDetails copy.rds")
