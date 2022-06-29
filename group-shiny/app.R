@@ -577,18 +577,33 @@ ui <- navbarPage(
              ),
              
              tabPanel("Q2.3",
-                      
+                      fluidRow(column(12,reactableOutput("GroupsDashboard", 
+                                                         width = "auto", 
+                                                         height = "auto", 
+                                                         inline = FALSE))),
                       fluidRow(
                         column(3,
-                               checkboxGroupInput("InterestGroup", "Interest Group",
-                                                  c("A" = "A",
-                                                    "B" = "B",
-                                                    "C" = "C",
-                                                    "D" = "D"),
-                                                  selected = "A")),
+                               selectInput("InterestGroup", "Interest Group",
+                                           c("A" = "A",
+                                             "B" = "B",
+                                             "C" = "C",
+                                             "D" = "D",
+                                             "E"="E",
+                                             "F"="F",
+                                             "G"="G",
+                                             "H"="H"),
+                                           multiple = TRUE,
+                                           selected = c("A" = "A",
+                                                        "B" = "B",
+                                                        "C" = "C",
+                                                        "D" = "D",
+                                                        "E"="E",
+                                                        "F"="F",
+                                                        "G"="G",
+                                                        "H"="H"))),
                         
                         
-                        column(9,plotlyOutput("InterestGroups")))
+                        column(9,plotOutput("InterestGroups")))
                       
                       
              )
@@ -1030,6 +1045,87 @@ server <- function(input, output){
   })
   
   
+  output$GroupsDashboard <- renderReactable({
+    
+    # if(input$HaveKidsDashboard!="All"){
+    #   ParticipantMonthlySparkData<-ParticipantMonthlySpark%>%
+    #     filter(householdSize %in% input$HouseHoldSizeDashboard)%>%
+    #     filter(haveKids==input$HaveKidsDashboard)%>%
+    #     filter(age>= input$age[1] & age<=input$age[2])%>%
+    #     filter(educationLevel %in% input$EducationDashboard)%>%
+    #     select(participantId,Earning,Expense,joviality)
+    # }
+    # else{
+    #   ParticipantMonthlySparkData<-ParticipantMonthlySpark%>%
+    #     filter(householdSize %in% input$HouseHoldSizeDashboard)%>%
+    #     filter(age>= input$age[1] & age<=input$age[2])%>%
+    #     filter(educationLevel %in% input$EducationDashboard)%>%
+    #     select(participantId,Earning,Expense,joviality)
+    # }
+    
+    
+    
+    
+    #ParticipantMonthlySparkShared<-SharedData$new(ParticipantMonthlySparkData)
+    
+    
+    ParticipantSavings%>%
+      mutate(interestGroup_colours=case_when(
+        interestGroup=="A" ~"#F5A24B",
+        interestGroup=="B" ~"#AF52D5",
+        interestGroup=="C" ~"#4C9B9B",
+        interestGroup=="D" ~"#C0DFA1",
+        interestGroup=="E" ~"#9FC490",
+        interestGroup=="F" ~"#82A3A1",
+        interestGroup=="G" ~"#465362",
+        interestGroup=="H" ~"#011936",
+      ))%>%
+      select(participantId,interestGroup,interestGroup_colours,TotalEarning,TotalExpense,joviality)%>%
+      reactable(
+        
+        columns = list(
+          participantId = colDef(maxWidth = 120),
+          interestGroup=colDef(
+            cell = color_tiles(
+              data = .,
+              color_ref = 'interestGroup_colours'
+            )
+            
+          ),
+          `TotalEarning` = colDef(
+            cell = color_tiles(ParticipantSavings,
+                               colors=viridis::mako(5),
+                               number_fmt = scales::comma_format(accuracy = 0.1))
+          ),
+          `TotalExpense` = colDef(
+            cell = color_tiles(ParticipantSavings,
+                               colors=viridis::mako(5),
+                               number_fmt = scales::comma_format(accuracy = 0.1))
+          ),
+          `joviality` =  colDef(
+            cell = data_bars(
+              data =ParticipantSavings,
+              fill_color = viridis::mako(5),
+              background = '#F1F1F1',
+              fill_opacity = 0.8,
+              round_edges = TRUE,
+              text_position = 'outside-end',
+              number_fmt = scales::comma_format(accuracy = 0.001)
+            )
+          )
+        )
+      )%>% 
+      add_title(
+        title = 'Are we financially fit?', 
+        
+        align = 'center',
+        font_color = '#000000'
+      )
+    
+  })
+  
+  
+  
   output$EarningReactableDashboard <- renderReactable({
     
     if(input$HaveKidsDashboard!="All"){
@@ -1091,10 +1187,6 @@ server <- function(input, output){
         font_color = '#000000'
       )
     
-    
-    
-    
-    
   })
   
   output$WagesExpenseDashboard <- renderReactable({
@@ -1128,7 +1220,8 @@ server <- function(input, output){
         `Earn` = colDef(
           name = 'Wage',
           minWidth = 150,
-          align = 'center',
+          align = 'right',
+          
           cell = data_bars(
             data = StatusLogDetailseData,
             text_position = 'outside-end',
@@ -1139,7 +1232,7 @@ server <- function(input, output){
         `Expense` = colDef(
           name = 'Expense',
           minWidth = 150,
-          align = 'center',
+          align = 'left',
           cell = data_bars(
             data = StatusLogDetailseData,
             text_position = 'outside-end',
@@ -1182,12 +1275,34 @@ server <- function(input, output){
   
   
   
-  output$InterestGroups<- renderPlotly({
+  output$InterestGroups<- renderPlot({
     
     
-    ggplot(InterestGroupGraph%>%
-             filter(interestGroup %in% input$InterestGroup))+
-      geom_line(aes(x=date,y=log(Expense*-1),color=interestGroup))
+    InterestGroupGraph%>%
+      filter(interestGroup %in% input$InterestGroup) %>% 
+      ggplot() +
+      geom_horizon(aes(x = date, y=log(Expense*-1)), origin = "midpoint", horizonscale = 6)+
+      facet_grid(interestGroup~.)+
+      theme_few() +
+      scale_fill_hcl(palette = 'RdBu') +
+      theme(panel.spacing.y=unit(0, "lines"), strip.text.y = element_text(
+        size = 5, angle = 0, hjust = 0),
+        legend.position = 'none',
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size=7),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.border = element_blank()
+      ) +
+      scale_x_date(expand=c(0,0), date_breaks = "1 month", date_labels = "%b%y") +
+      ggtitle('Expenses among Interest Groups')
+    
+    
+    
+    # ggplot(InterestGroupGraph%>%
+    #          filter(interestGroup %in% input$InterestGroup))+
+    #   geom_line(aes(x=date,y=log(Expense*-1),color=interestGroup))
     
     
     
@@ -1250,6 +1365,7 @@ server <- function(input, output){
     
     ggplotly(lorenz)
   })
+  
   
   ########################## Q3 ########################## 
   
