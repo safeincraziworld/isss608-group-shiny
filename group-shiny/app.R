@@ -52,6 +52,7 @@ jobs <- readRDS('data/Q3/jobs.rds')
 participants <- readRDS('data/Q3/participants.rds')
 pay_hires <- readRDS('data/Q3/pay_hires.rds')
 prevEmp_sf <- readRDS('data/Q3/prevEmp_sf.rds')
+recntEmp_sf <- readRDS('data/Q3/recntEmp_sf.rds')
 switchEmployeesAllDetails <- readRDS('data/Q3/switchEmployeesAllDetails.rds')
 transitionEmpDetails <- readRDS('data/Q3/transitionEmpDetails.rds')
 transitionTable <- readRDS('data/Q3/transitionTable.rds')
@@ -604,23 +605,32 @@ ui <- navbarPage(
                             height = 100,
                             tabsetPanel(
                               tabPanel("One Sample Test ",
-                                       box(
+                                       sidebarPanel(
                                          width = 4,
-                                         height = 60,
+                                         height = 100,
                                          selectInput(inputId = "variable_selection", 
                                                      label =   "Type of test:",
                                                      choices =  c("Parametric" = "parametric",
                                                                   "Non Parametric" = "nonparametric",
                                                                   "Robust" = "robust"),
                                                      selected = "Parametric"
-                                         )),
-                                       box(plotOutput("testPlot")),
-                                       box(
-                                         width = 8,
-                                         height = 120
-                                         
-                                         
-                                       )
+                                         ),
+                                         box(
+                                           width = 20,
+                                           height=200,
+                                           h4('Test Summary:'),
+                                           textOutput("testsummary"),
+                                         )
+                                        ),
+                        
+                                       mainPanel(plotOutput("testPlot",
+                                                            width = "500px")),
+                                       # box(
+                                       #   width = 8,
+                                       #   height = 120
+                                       #   
+                                       #   
+                                       # )
                               ),
                               tabPanel("Job Route",
                                        box(
@@ -634,12 +644,12 @@ ui <- navbarPage(
                                        ),
                                        fluidRow(
                                          box("Commute route from home to work before job change",
-                                             plotOutput(outputId = "befRoute",
+                                             tmapOutput(outputId = "befRoute",
                                                         width = 500,
                                                         height = 500),
                                          ),
                                          box("Commute route from home to work after job change",
-                                             plotOutput(outputId  = "aftRoute",
+                                             tmapOutput(outputId  = "aftRoute",
                                                         width = 500,
                                                         height = 500)
                                          )
@@ -648,20 +658,26 @@ ui <- navbarPage(
                                        
                               ),
                               tabPanel("Change of Wage",
-                                       box(
-                                         width = 4,
-                                         height = 60,
-                                         checkboxGroupInput(inputId = "groupbyCategory", 
+                                       sidebarPanel(
+                                         width = 2,
+                                         #height = 50,
+                                         radioButtons(inputId = "groupbyCategory", 
                                                             label =   "Choose Category :",
                                                             choices =  c("Education Level" = "educationLevel",
                                                                          "Household Size" = "householdSize",
                                                                          "Having Kids" = "haveKids",
-                                                                         "Interest Group" = "interestGroup"),
-                                                            selected = "educationLevel"
+                                                                         "Interest Group" = "interestGroup",
+                                                                         "Age Group" = "ageGroup"),
+                                                            selected = "interestGroup"
                                          )),
-                                       plotlyOutput("eduPayPlot"),
-                                       plotlyOutput("partPayPlot"),
-                                       verbatimTextOutput("drildownlinfo")
+                                       mainPanel(width = 25,
+                                                 box(
+                                                   plotlyOutput("barPayPlot",
+                                                                width = "900px"))
+                                                                #height = "500px"))
+                                       ),
+                                       
+                                       DT::dataTableOutput(outputId = "barPayPlotTable")
                                        
                                        
                               ),
@@ -681,9 +697,9 @@ ui <- navbarPage(
                             height = 100,
                             tabsetPanel(
                               tabPanel("Education vs Pay",
-                                       box(
-                                         width = 4,
-                                         height = 320,
+                                       sidebarPanel(
+                                         width = 3,
+                                         #height = 320,
                                          checkboxGroupInput(inputId = "edu", 
                                                             label =   "Education Requirement:",
                                                             choices =  c("Low" = "Low",
@@ -697,15 +713,18 @@ ui <- navbarPage(
                                            label = "Plot title",
                                            placeholder = "Enter text to be used as plot title"),
                                          actionButton("goButton", "Go!"),
-                                         
+                                       
                                          checkboxInput(inputId = "showData",
                                                        label = "Show data table",
                                                        value = TRUE)
                                        ),
-                                       box(
-                                         height = 400,
-                                         plotlyOutput("rainPlot")
+                                       
+                                       mainPanel(width = 15,
+                                                 box(
+                                                   plotlyOutput("rainPlot",
+                                                              height = "500px"))
                                        ),
+                                       
                                        DT::dataTableOutput(outputId = "rainPlotTable")
                                        
                               ),
@@ -734,6 +753,7 @@ ui <- navbarPage(
                                                                  "Orange-Red Diverging" = "OrRd",
                                                                  "Light -Dark Blue" = "Blues"),
                                                      selected = "RdYlBu"),
+                                      
                                          sliderInput(inputId = "no.ofemp",
                                                      label = "Choose min. and max. no. of employees",
                                                      min = 2,
@@ -759,7 +779,7 @@ ui <- navbarPage(
                                                        label = "Show data table",
                                                        value = TRUE)
                                        ),
-                                       box(plotOutput("mapPlot")),
+                                       box(tmapOutput("mapPlot")),
                                        DT::dataTableOutput(outputId = "aTable")
                                        
                               ),
@@ -1234,19 +1254,6 @@ server <- function(input, output){
   ########################## Q3 ########################## 
   
   output$testPlot <- renderPlot({
-    work_home <- travel %>%
-      filter(purpose == "Work/Home Commute") %>%
-      group_by(participantId,travelEndLocationId) %>%
-      tally() %>%
-      dplyr::select('participantId','travelEndLocationId') 
-    work <- inner_join(x = work_home, y = emp, by= c("travelEndLocationId"="employerId" )) %>%
-      dplyr::select('participantId','travelEndLocationId') %>%
-      group_by(participantId) %>%
-      tally() %>%
-      dplyr::rename('numberofplacesworked'='n')
-    workinmoreplaces = work %>%
-      filter(numberofplacesworked > 1) %>%
-      arrange(desc(numberofplacesworked))
     
     gg <- gghistostats(
       data = work, 
@@ -1261,37 +1268,39 @@ server <- function(input, output){
     
   })
   
-  output$err_op <- renderPlot({
-    weeklypay_education <- jobs %>%
-      group_by(educationRequirement) %>%
-      summarise(
-        n=n(),
-        mean=mean(weeklypay),
-        sd=sd(weeklypay))%>%
-      mutate(se=sd/sqrt(n-1))
-    
-    errplt <- ggplot(weeklypay_education) +
-      geom_errorbar(
-        aes(x=educationRequirement, 
-            ymin=mean-se, 
-            ymax=mean+se), 
-        width=0.2, 
-        colour="black", 
-        alpha=0.9, 
-        size=0.5) +
-      geom_point(aes
-                 (x=educationRequirement, 
-                   y=mean), 
-                 stat="identity", 
-                 color="red",
-                 size = 1.5,
-                 alpha=1) +
-      ggtitle("Weekly pay vs educational requirement")+
-      theme(plot.title = element_text(hjust = 0.5))
-    
-    return(errplt)
-    
-  })
+  output$testsummary <- renderText( "The mean of places worked is 1.20.With a null hypothesis that one works for more than one place (ie. model/hypothesis of place worked =1), our log Bayes factor has shown the null hypothesis cannot be rejected, meaning indeed in city of OHIO,people have high likelyhood of having worked for more than one employer during time surveyed.")
+  
+  # output$err_op <- renderPlot({
+  #   weeklypay_education <- jobs %>%
+  #     group_by(educationRequirement) %>%
+  #     summarise(
+  #       n=n(),
+  #       mean=mean(weeklypay),
+  #       sd=sd(weeklypay))%>%
+  #     mutate(se=sd/sqrt(n-1))
+  #   
+  #   errplt <- ggplot(weeklypay_education) +
+  #     geom_errorbar(
+  #       aes(x=educationRequirement, 
+  #           ymin=mean-se, 
+  #           ymax=mean+se), 
+  #       width=0.2, 
+  #       colour="black", 
+  #       alpha=0.9, 
+  #       size=0.5) +
+  #     geom_point(aes
+  #                (x=educationRequirement, 
+  #                  y=mean), 
+  #                stat="identity", 
+  #                color="red",
+  #                size = 1.5,
+  #                alpha=1) +
+  #     ggtitle("Weekly pay vs educational requirement")+
+  #     theme(plot.title = element_text(hjust = 0.5))
+  #   
+  #   return(errplt)
+  #   
+  # })
   
   output$rainPlot <- renderPlotly({
     input$goButton
@@ -1333,7 +1342,7 @@ server <- function(input, output){
   output$rainPlotTable <- DT::renderDataTable({
     if(input$showData){
       DT::datatable(jobs %>% filter(educationRequirement == input$edu) %>%
-                      select(jobId, employerId, hourlyRate, educationRequirement),
+                      dplyr::select(jobId, employerId, hourlyRate, educationRequirement),
                     options= list(pageLength = 10),
                     rownames = FALSE)
     }
@@ -1341,11 +1350,11 @@ server <- function(input, output){
   })  
   
   
-  output$mapPlot <- renderPlot({
+  output$mapPlot <- renderTmap({
     
     
     if(input$emp == "left") {
-      tmap_mode("plot")
+      #tmap_mode("plot")
       tm_shape(buildings)+
         tm_polygons(col = "grey60",
                     size = 1,
@@ -1359,7 +1368,7 @@ server <- function(input, output){
       
     } 
     else {
-      tmap_mode("plot")
+      #tmap_mode("plot")
       tm_shape(buildings)+
         tm_polygons(col = "grey60",
                     size = 1,
@@ -1389,7 +1398,7 @@ server <- function(input, output){
   ############# Turnover analysis before and after route map ###################
   
   
-  output$befRoute <- renderPlot({
+  output$befRoute <- renderTmap({
     
     
     logs_path_PrevJob <- logs_path_PrevJob %>%
@@ -1411,7 +1420,7 @@ server <- function(input, output){
                 legend.show = FALSE)
   })
   
-  output$aftRoute <- renderPlot({
+  output$aftRoute <- renderTmap({
     
     logs_path_RecJob <- logs_path_RecJob %>%
       filter(participantId == input$participants)
@@ -1462,10 +1471,12 @@ server <- function(input, output){
   
   
   
-  output$eduPayPlot <- renderPlotly({
+  output$barPayPlot <- renderPlotly({
     
-    switchEmployeesAllDetails$participantId <- as.character(switchEmployeesAllDetails$participantId)
-    p1<- ggplot(switchEmployeesAllDetails,
+    if(input$groupbyCategory == "educationLevel"){
+    
+    #switchEmployeesAllDetails$participantId <- as.character(switchEmployeesAllDetails$participantId)
+    ggplot(switchEmployeesAllDetails,
                 aes(x=educationLevel, y=payDiff))+
       geom_bar(stat="identity", aes(fill = payStatus))+
       scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
@@ -1474,29 +1485,63 @@ server <- function(input, output){
             axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
             axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
       )
-    ggplotly(p1)
+    }
+    
+    else if(input$groupbyCategory == "householdSize"){
+      ggplot(switchEmployeesAllDetails,
+                  aes(x=householdSize, y=payDiff))+
+        geom_bar(stat="identity", aes(fill = payStatus))+
+        scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
+        labs(y= 'Pay\n Difference',title="Wage Difference by Household size", x='Household Size') +
+        theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
+              axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
+              axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
+        )
+      
+      
+    }
+    else if(input$groupbyCategory == "haveKids"){
+      ggplot(switchEmployeesAllDetails,
+                  aes(x=haveKids, y=payDiff))+
+        geom_bar(stat="identity", aes(fill = payStatus))+
+        scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
+        labs(y= 'Pay\n Difference',title="Wage Difference by Kids", x='Having Kids') +
+        theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
+              axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
+              axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
+        )
+    
+    }
+    else if(input$groupbyCategory == "interestGroup"){
+      ggplot(switchEmployeesAllDetails,
+                  aes(x=interestGroup, y=payDiff))+
+        geom_bar(stat="identity", aes(fill = payStatus))+
+        scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
+        labs(y= 'Pay\n Difference',title="Employee Wage Difference by Interest Group", x='Interest Group') +
+        theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
+              axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
+              axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
+        )
+    
+      
+    }
+    else if(input$groupbyCategory == "ageGroup"){
+      ggplot(switchEmployeesAllDetails,
+                  aes(x=ageGroup, y=payDiff))+
+        geom_bar(stat="identity", aes(fill = payStatus))+
+        scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
+        labs(y= 'Pay\n Difference',title="Wage Difference among Age Groups", x='Age Group') +
+        theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
+              axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
+              axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
+        )
+    
+      
+    }
+  
     
   })
   
-  output$partPayPlot <- renderPlotly({
-    d <- event_data("plotly_click")
-    if (is.null(d)) return(NULL)
-    p2 <- switchEmployeesAllDetails %>% 
-      filter(educationLevel %in% d$x) %>%
-      ggplot(aes(x=haveKids, y=payDiff))+
-      geom_bar(stat="identity", aes(fill = payStatus))+
-      scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
-      labs(y= 'Pay\n Difference',title="Change in Wage by Kids", x='Having Kids') +
-      theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
-            axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
-            axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
-      ) 
-    ggplotly(p2) %>%
-      layout(xaxis = list(title = d$x))
-  })
-  output$drildownlinfo <- renderPrint({
-    event_data("plotly_click")
-  })
   
   
 }
