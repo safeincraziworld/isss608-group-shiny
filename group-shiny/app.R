@@ -49,6 +49,10 @@ empWorkinMultiplePlaces_latest_groupby <- readRDS("data/Q3/empWorkinMultiplePlac
 empWorkinMultiplePlaces_previous <- readRDS("data/Q3/empWorkinMultiplePlaces_previous.rds")
 empWorkinMultiplePlaces_previous_groupby <- readRDS("data/Q3/empWorkinMultiplePlaces_previous_groupby.rds")
 jobs <- readRDS("data/Q3/jobs.rds")
+logs_path_PrevJob <- readRDS("data/Q3/logs_path_PrevJob.rds")
+logs_path_RecJob <- readRDS("data/Q3/logs_path_RecJob.rds")
+no.ofjobs<- readRDS("data/Q3/no.ofjobs.rds")
+no.ofjobs_table <- readRDS("data/Q3/no.ofjobs_table.rds")
 participants <- readRDS("data/Q3/participants.rds")
 pay_hires <- readRDS("data/Q3/pay_hires.rds")
 prevEmp_sf <- readRDS("data/Q3/prevEmp_sf.rds")
@@ -60,9 +64,6 @@ work <- readRDS("data/Q3/work.rds")
 work_home <- readRDS("data/Q3/work_home.rds")
 work_home_filt <- readRDS("data/Q3/work_home_filt.rds")
 workinmoreplaces <- readRDS("data/Q3/workinmoreplaces.rds")
-logs_selected<-readRDS("data/logs_selected.rds")
-drilldown <- readRDS(("data/Q3/drilldown.rds"))
-
 
 ########################## Q2 ########################## 
 
@@ -285,115 +286,15 @@ drilldown <- readRDS(("data/Q3/drilldown.rds"))
 
 ########################## Q3 ########################## 
 
-########## before and after route map ################
-
-hex <- st_make_grid(buildings, 
-                    cellsize=100, 
-                    square=FALSE) %>%
-  st_sf() %>%
-  rowid_to_column('hex_id')
-points_in_hex <- sf::st_join(logs_selected, 
-                             hex, 
-                             join=st_within)
-
-points_in_hex <- sf::st_join(logs_selected, 
-                             hex, 
-                             join=st_within) %>%
-  st_set_geometry(NULL) %>%
-  dplyr::count(name='pointCount', hex_id)
-
-hex_combined <- hex %>%
-  left_join(points_in_hex, 
-            by = 'hex_id') %>%
-  replace(is.na(.), 0)
-
-p <- tm_shape(hex_combined %>%
-                filter(pointCount > 0))+
-  tm_fill("pointCount",
-          n = 8,
-          style = "quantile") +
-  tm_borders(alpha = 0.1)
-
-logs_path <- logs_selected %>%
-  group_by(participantId, day) %>%
-  dplyr::summarize(m = mean(Timestamp), 
-                   do_union=FALSE) %>%
-  mutate(date = as_date(m)) %>%
-  st_cast("LINESTRING")
-logs_path_PrevJob <-logs_path %>%
-  filter(participantId %in% 
-           empWorkinMultiplePlaces_previous$participantId &
-           date %in% 
-           empWorkinMultiplePlaces_previous$StartDate) %>%
-  slice(which.min(date)) %>%
-  dplyr::select(participantId,date,currentLocation)
-
 partid = c(logs_path_PrevJob$participantId)
 
-logs_path_RecJob <-logs_path %>%
-  filter(participantId %in% 
-           empWorkinMultiplePlaces_latest$participantId &
-           date %in% 
-           empWorkinMultiplePlaces_latest$StartDate) %>%
-  slice(which.max(date)) %>%
-  dplyr::select(participantId,date,currentLocation)
+###################### drilldown bar graph #############3
 
-################## treemap ##############
-
-no.ofjobs <- jobs %>% 
-  group_by(employerId) %>%
-  summarise(no.ofjobs = n(),
-            totalWage = sum(hourlyRate),
-            avgWage = mean(hourlyRate)) %>%
-  dplyr::rename('Average Wage' = 'avgWage') %>%
-  mutate(label = paste(no.ofjobs, 'Jobs'))
-
-no.ofjobs_table <- jobs %>% 
-  group_by(employerId) %>%
-  summarise(no.ofjobs = n(),
-            totalWage = sum(hourlyRate),
-            avgWage = mean(hourlyRate),
-            eduLevel = educationRequirement) %>%
-  dplyr::rename('Average Wage' = 'avgWage') %>%
-  mutate(label = paste(no.ofjobs, 'Jobs')) %>%
-  dplyr::select(employerId, no.ofjobs, `Average Wage`, eduLevel)
-
-
-################### difference in wage bar plot ###################
-
-### Switch employee all details
-
-transitionTableWithPrevPay <- left_join(x=transitionTable, y= pay_hires, by= c("previous_employer"="employerId")) %>%
-  dplyr::select(participantId, previous_employer, employeepay) %>%
-  dplyr::rename("prevPay" = "employeepay")
-
-transitionTableWithRecentPay <- left_join(x=transitionTable, y= pay_hires, by= c("recent_employer"="employerId")) %>%
-  dplyr::select(participantId, recent_employer, employeepay) %>%
-  dplyr::rename("recentPay" = "employeepay")
-
-transitionTablewithPay <- inner_join(x=transitionTableWithPrevPay,
-                                     y=transitionTableWithRecentPay,
-                                     by = "participantId")
-
-switchEmployeesAllDetails <- switchEmployeesAllDetails %>%
-  inner_join(x=transitionTablewithPay,
-             y=transitionEmpDetails,
-             by="participantId") %>%
-  mutate(payDiff = recentPay - prevPay)
-
-switchEmployeesAllDetails <- switchEmployeesAllDetails %>%
-  mutate(payStatus = case_when(payDiff > 0 ~ "Pay Increase",
-                               payDiff < 0 ~ "Pay Decrease",
-                               TRUE ~ "Same Pay")) %>%
-  mutate(haveKids = replace(haveKids, haveKids == TRUE, "Having Kids")) %>%
-  mutate(haveKids = replace(haveKids, haveKids == FALSE, "Not Having Kids"))
-
-
-
-  
-
-
-
+alias <- switchEmployeesAllDetails
+alias$participantId=as.numeric(alias$participantId)
+morePlacesPayChange <- left_join(x = alias,
+                                 y= workinmoreplaces,
+                                 by = "participantId")
 
 ########################## Shiny UI ####################################
 
@@ -626,22 +527,7 @@ ui <- navbarPage(
                             width = 12,
                             height = 100,
                             tabsetPanel(
-                              tabPanel("Change of Workplaces",
-                                       titlePanel("Please click on the bar to see the pay comparison"),
-                                       mainPanel(fluidRow(
-                                         column(6,
-                                                plotlyOutput(
-                                                  outputId="no.ofplacesworked", 
-                                                  width="300px",
-                                                  height="300px")),  
-                                         column(6,
-                                                plotlyOutput(
-                                                  outputId="paystatus", 
-                                                  width="300px",
-                                                  height="300px"))
-                                       )),
-                                      
-                              ),
+                              
                               tabPanel("Job Route",
                                        box(
                                          width = 20,
@@ -689,6 +575,26 @@ ui <- navbarPage(
                                        
                                        DT::dataTableOutput(outputId = "barPayPlotTable")
                                        
+                                       
+                              ),
+                              tabPanel("Change of Workplaces",
+                                       titlePanel("Please click on the bar to see the pay comparison"),
+                                       mainPanel(
+                                         fluidRow(
+                                           column(6,
+                                                  plotlyOutput(
+                                                    outputId="placesworked", 
+                                                    width="500px",
+                                                    height="400px")),  
+                                           column(6,
+                                                  plotlyOutput(
+                                                    outputId="paychange", 
+                                                    width="500px",
+                                                    height="400px"))
+                                         ),
+                                         
+                                         #verbatimTextOutput("info")
+                                       ),
                                        
                               ),
                               
@@ -1379,43 +1285,49 @@ server <- function(input, output){
   
   ########################## Q3 ########################## 
   
-  output$no.ofplacesworked <- renderPlotly({
-      p <- ggplot(data=drilldown, 
-                  aes(x=numberofplacesworked)) +
-        geom_bar(fill = "#669933") +
-        labs(y= 'No. of participants',title="No. of participants switched jobs", x='') +
-        theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
-              axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
-              axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
-        )
-      ggplotly(p)
-    
-  })
-  output$paystatus <- renderPlotly({
-    d <- event_data("plotly_click")
-    if (is.null(d)) return(NULL)
-    p <- drilldown %>% 
-      filter(numberofplacesworked %in% d$x) %>%
-      ggplot(aes(x=payStatus)) +
-      geom_bar(fill="#FFCC66")  +
-      labs(y= 'No. of participants',title="Did Wage increase or Decrease ?", x='') +
+  
+  output$placesworked <- renderPlotly({
+    p <- ggplot(data= morePlacesPayChange, 
+                aes(x=numberofplacesworked)) +
+      geom_bar(fill = "#669933") +
+      labs(y= 'No. of participants',title="Multiple Workplaces", x='No. of workplaces') +
+      # scale_x_discrete(breaks=c("2","3"),
+      #                  labels=c("2","3"))+
       theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
             axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
             axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
+            
+      )
+    ggplotly(p)
+  })
+  
+  output$paychange <- renderPlotly({
+    d <- event_data("plotly_click")
+    if (is.null(d)) return(NULL)
+    p <- morePlacesPayChange %>% 
+      filter(numberofplacesworked %in% d$x) %>%
+      ggplot(aes(x=payStatus)) +
+      geom_bar(fill="#FFCC66")  +
+      labs(y= 'No. of participants',title="Did Wage increase or decrease ?", x='') +
+      theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
+            axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
+            axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
+            
+            
       )
     ggplotly(p) %>%
       layout(xaxis = list(title = d$x))
-    
   })
+  # output$info <- renderPrint({
+  #   event_data("plotly_click")
+  #})   
   
-  output$info <- renderPrint({
-    event_data("plotly_click")
-  })
+ 
   
   output$rainPlot <- renderPlotly({
     input$goButton
     
-    p <- ggplot(jobs %>% filter(educationRequirement == input$edu),
+    p <- ggplot(jobs %>% filter(educationRequirement == input$edu) ,
                 aes(x = educationRequirement, y = hourlyRate, fill=educationRequirement)) + 
       ggdist::stat_halfeye(
         adjust = .5, 
@@ -1451,7 +1363,9 @@ server <- function(input, output){
   
   output$rainPlotTable <- DT::renderDataTable({
     if(input$showData){
-      DT::datatable(jobs %>% filter(educationRequirement == input$edu) %>%
+      DT::datatable(jobs %>% 
+                      filter(educationRequirement == input$edu) %>%
+                      mutate(hourlyRate = round(hourlyRate,0)) %>%
                       dplyr::select(jobId, employerId, hourlyRate, educationRequirement),
                     options= list(pageLength = 10),
                     rownames = FALSE)
@@ -1474,8 +1388,8 @@ server <- function(input, output){
         tm_compass() +
         tm_bubbles(col = "red",
                    n=3,
-                   size = "no.ofempLeft") 
-      
+                   size = "no.ofempLeft")+
+        tm_view(set.zoom.limits = c(13,18))
     } 
     else {
       #tmap_mode("plot")
@@ -1487,7 +1401,8 @@ server <- function(input, output){
         tm_shape(recntEmp_sf) +
         tm_compass() +
         tm_bubbles(col = "green",
-                   size = "no.ofempShifted") 
+                   size = "no.ofempShifted")+
+        tm_view(set.zoom.limits = c(13,18))
     }
     
   })
@@ -1499,14 +1414,16 @@ server <- function(input, output){
     if(input$emp == "left"){
       if(input$showData){
       
-      DT::datatable(prevEmp_sf,
+      DT::datatable(prevEmp_sf %>%
+                      dplyr::select(employerId,no.ofempLeft),
                     options= list(pageLength = 10),
                     rownames = FALSE)
       }
     }
     else if(input$emp == "joined"){
       if(input$showData){
-      DT::datatable(recntEmp_sf,
+      DT::datatable(recntEmp_sf %>%
+                      dplyr::select(employerId,no.ofempShifted),
                     options= list(pageLength = 10),
                     rownames = FALSE)
       }
