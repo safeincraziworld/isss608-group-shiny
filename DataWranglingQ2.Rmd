@@ -1,0 +1,326 @@
+---
+title: "RDS files"
+author: "Raunak Kapur"
+date: "6/26/2022"
+output: html_document
+---
+
+
+```{r}
+FinancialJournal<-read_csv("data/FinancialJournal.csv",show_col_types = FALSE)
+Participants<-read_csv("data/Participants.csv",show_col_types = FALSE)
+ParticipantsApartmentLocation<-read_csv("data/ParticipantsApartmentLocation.csv",show_col_types = FALSE)
+#buildings<-read_sf("data/buildings.csv", 
+#                   options = "GEOM_POSSIBLE_NAMES=location")
+
+
+```
+
+
+```{r}
+######## Data Cleaning
+
+PartMonthYear=FinancialJournal%>%
+  mutate(Year=as.numeric(year(timestamp)),
+         Month=as.character(timestamp,"%b %y"),
+         MonthNumeric=as.numeric(month(timestamp)))%>%
+  group_by(participantId,Year,Month,MonthNumeric,category)%>%
+  summarise(TotalAmount=sum(amount))
+
+######## Getting the location of all participants
+
+#ParticipantLog<-readRDS('data/logs_fread.rds')
+#ParticipantsApartmentLocation<-ParticipantLog%>%
+#  filter(currentMode=="AtHome")%>%
+#  distinct(participantId,currentLocation)
+#write_csv(ParticipantsApartmentLocation,"data/ParticipantsApartmentLocation.csv")
+
+
+######## Data for Time Series
+PartDailyExpense<-FinancialJournal%>%
+  mutate(date=date(timestamp))%>%
+  group_by(participantId,date,category)%>%
+  summarise(TotalAmount=sum(amount))
+
+PartDetailsDailyExpense<-left_join(x=PartDailyExpense,
+                                   y=Participants,
+                                   by=c("participantId"="participantId")
+)
+
+
+
+
+ParticipantsFinancialJournal <- inner_join(x= PartMonthYear,
+                                           y= Participants, 
+                                           by= 'participantId')
+
+
+ParticipantsFinancialJournalExpense=ParticipantsFinancialJournal%>%
+  filter(category!='Wage')%>%
+  group_by(participantId,Year,Month)%>%
+  summarise(Expense=sum(TotalAmount)*-1)
+
+ParticipantsFinancialJournalEarnings=ParticipantsFinancialJournal%>%
+  filter(category=='Wage')%>%
+  group_by(participantId,Year,Month)%>%
+  summarise(Earn=sum(TotalAmount))
+
+ParticipantsEarningsVsExpense <- left_join(
+  x= ParticipantsFinancialJournalExpense, 
+  y= ParticipantsFinancialJournalEarnings, 
+  by= c('participantId'='participantId',
+        'Year'='Year',
+        'Month'='Month'))
+
+
+FinHealth=ParticipantsFinancialJournal%>%
+  group_by(Year,Month,category)%>%
+  summarise(TotalAmount=sum(TotalAmount))
+
+
+
+Expenditure=FinHealth%>%
+  filter(category!='Wage' & category!='RentAdjustment')%>%
+  group_by(Year,Month)%>%
+  summarise(Expense=sum(TotalAmount)*-1)
+
+Earnings=FinHealth%>%
+  filter(category=='Wage')%>%
+  group_by(Year,Month)%>%
+  summarise(Earn=sum(TotalAmount))
+
+
+EarningsVsExpense <- inner_join(
+  x= Expenditure, 
+  y= Earnings, 
+  by= c('Year'='Year','Month'='Month'))
+
+
+ParticipantMonthlySavings<-left_join(
+  x=ParticipantsEarningsVsExpense,
+  y=Participants,
+  by='participantId')%>%
+  mutate(Savings=Earn-Expense)
+
+
+ParticipantSavings<-
+  left_join(x=ParticipantMonthlySavings%>%
+              group_by(participantId)%>%
+              summarise(
+                        TotalEarning=mean(Earn),
+                        TotalExpense=mean(Expense)),
+            y=Participants,
+            by='participantId')
+
+# Data for Heat Map
+
+#StatusLogDetails<-PartDetailsDailyExpense%>%
+#  mutate(Weekday=weekdays(date),Month=zoo::as.yearmon(date,"%Y %m"))%>%
+#  filter(category=='Food' | category=='Recreation')
+
+#Data for candlestick
+#DailyCurrentModeTime<-PartDetailsDailyExpense%>%
+#  mutate(Weekday=weekdays(date),Month=zoo::as.yearmon(date,"%Y %m"))
+
+
+# Open=DailyCurrentModeTime%>%
+#   group_by(Month,category)%>%
+#   filter(day(date)==max(day(date)))%>%
+#   group_by(Month,category)%>%
+#   summarise(OpenTimeSpent=mean(TotalAmount))
+# 
+# Close=DailyCurrentModeTime%>%
+#   group_by(Month,category)%>%
+#   filter(day(date)==min(day(date)))%>%
+#   group_by(Month,category)%>%
+#   summarise(CloseTimeSpent=mean(TotalAmount))
+# 
+# High=DailyCurrentModeTime%>%
+#   group_by(Month,category)%>%
+#   summarise(HighTimespent=max(TotalAmount))
+# 
+# Low=DailyCurrentModeTime%>%
+#   group_by(Month,category)%>%
+#   summarise(LowTimespent=min(TotalAmount))
+# 
+# 
+# CandlestickData=left_join(High, Low, by= c('Month'='Month',
+#                                            'category'='category')) %>%
+#   left_join(., Open, by=c(
+#     'Month'='Month',
+#     'category'='category'))%>% 
+#   left_join(., Close, by=c(
+#     'Month'='Month',
+#     'category'='category'))
+
+### Data for Sparklines
+
+ParticipantMonthlySpark<-ParticipantMonthlySavings%>%
+  group_by(participantId)%>%
+  summarise(Expense=list(Expense),
+            Earning=list(Earn))%>%
+  left_join(.,Participants,
+            by=c("participantId"="participantId"))
+
+#ParticipantMonthlyEarningSpark<-ParticipantMonthlySavings%>%
+#  group_by(participantId)%>%
+#  summarise(Earning=list(Earn))
+
+
+
+######## Plots 
+
+
+### Time series ###
+
+PartDailyExpense<-FinancialJournal%>%
+  mutate(date=date(timestamp))%>%
+  group_by(participantId,date,category)%>%
+  summarise(TotalAmount=sum(amount))%>%
+  filter(category!="Wage")%>%
+  group_by(participantId,date)%>%
+  summarise(Expense=sum(TotalAmount))
+
+PartDetailsDailyExpense<-left_join(x=PartDailyExpense,
+                                   y=Participants,
+                                   by=c("participantId"="participantId"))
+
+
+S<-PartDetailsDailyExpense%>%
+  group_by(date,interestGroup)%>%
+  summarise(Expense=sum(Expense))
+
+
+InterestGroupGraph<-PartDetailsDailyExpense%>%
+  group_by(date,interestGroup)%>%
+  summarise(Expense=sum(Expense))
+
+
+### Coordinated Plot ###
+
+PShighlighted <- highlight_key(ParticipantSavings%>%select(-TotalSavings))
+Er <- ggplot(data=PShighlighted, 
+             aes(x = TotalEarning,
+                 y = joviality,
+                 color=as.character(householdSize),
+                 text=paste("Earning: ",round(TotalEarning,2),
+                            "<br>Joviality: ",round(joviality,2),
+                            "<br>Household Size: ",householdSize))) +
+  geom_point(size=1)+
+  xlab("Earning")+
+  ylab("Joviality")
+
+Ex <- ggplot(data=PShighlighted, 
+             aes(x = TotalExpense,
+                 y = joviality,
+                 color=as.character(householdSize),
+                 text=paste("Expense: ",round(TotalExpense,2),
+                            "<br>Joviality: ",round(joviality,2),
+                            "<br>Household Size: ",householdSize))) +
+  geom_point(size=1)+
+  ggtitle("Can money buy happiness?")+
+  theme(legend.position="none")
+
+#FB<-highlight(subplot(ggplotly(Er,tooltip = c("text")),ggplotly(Ex,tooltip = c("text"))),"plotly_selected")
+#crosstalk::bscols(FB,DT::datatable(z,options = list(
+#  columnDefs = list(list(className = 'dt-center', targets = 5)),
+#  pageLength = 10,
+#  autoWidth = TRUE,
+#  scrollX = T,
+#  lengthMenu = c(5, 10, 15, 20))),
+#  widths = c(12,12))
+StatusLogDetails<-PartDetailsDailyExpense%>%
+ mutate(Weekday=weekdays(date),Month=zoo::as.yearmon(date,"%Y %m"))
+
+```
+```{r}
+ParticipantMonthlySavings<-ParticipantMonthlySavings%>%
+  mutate(householdSize=as.character(householdSize))
+
+
+StatusLogDetails<-StatusLogDetails%>%mutate(Month=as.character(Month))
+StatusLogDetails<-StatusLogDetails%>%mutate(householdSize=as.character(householdSize))
+```
+
+Saving to RDS
+```{r}
+
+saveRDS(ParticipantSavings,"data/Q2/ParticipantSavings.rds")
+saveRDS(FinHealth,"data/Q2/FinHealth.rds")
+saveRDS(ParticipantMonthlySavings,"data/Q2/ParticipantMonthlySavings.rds")
+saveRDS(ParticipantMonthlySpark,"data/Q2/ParticipantMonthlySpark.rds")
+
+saveRDS(InterestGroupGraph,"data/Q2/InterestGroupGraph.rds")
+saveRDS(StatusLogDetails,"data/Q2/StatusLogDetails.rds")
+```
+
+
+```{r}
+StatusLogDetails<-StatusLogDetails%>%
+  mutate(TotalAmount=TotalAmount*-1)
+
+```
+
+```{r}
+ggplot(StatusLogDetails)+
+        geom_density_ridges_gradient(aes(y = haveKids, 
+                                         x = TotalAmount,
+                                         fill=stat(x),
+                                         height = ..density..),
+                                     scale = 1,
+                                     stat="density",
+                                     rel_min_height = 0.01,
+                                     bandwidth=80)+
+        scale_fill_viridis_c(name = "Amount", option = "C")+
+        xlab("Amount")+
+        ylab("Kids")+
+        facet_grid(~Month)+
+        ggtitle("Expenses during the On vs Off season")+
+        labs(caption="Source: https://r-graph-gallery.com/ridgeline-plot.html")+
+        theme(axis.title.y=element_text(angle=0))
+
+```
+
+
+
+
+
+For heatmaply
+
+```{r}
+
+ParticipantsExpenseCategory<-StatusLogDetails%>%
+  group_by(participantId,category)%>%
+  summarise(MeanAmount=mean(TotalAmount))%>%
+  ungroup()%>%
+  pivot_wider(names_from = category, values_from = MeanAmount)
+
+
+saveRDS(ParticipantsExpenseCategory,"group-shiny/data/Q2/EducationExpenseCategory.rds")
+
+row.names(ParticipantsExpenseCategory) <- ParticipantsExpenseCategory$participantId
+
+```
+
+```{r}
+ParticipantsExpenseCategory1 <-ParticipantsExpenseCategory%>%
+  select(c(2:6))
+ParticipantsExpenseCategory_matrix <- data.matrix(ParticipantsExpenseCategory1)
+```
+
+
+```{r}
+heatmaply(normalize(ParticipantsExpenseCategory_matrix),
+          Colv=NA,
+          seriate = "none",
+          colors = Blues,
+          k_row = 5,
+          margins = c(NA,200,60,NA),
+          fontsize_row = 4,
+          fontsize_col = 5,
+          main="Participants and their financial status \nDataTransformation using Normalise Method",
+          xlab = "Categories",
+          ylab = "ParticipantId"
+          )
+
+```

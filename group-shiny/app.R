@@ -9,7 +9,7 @@ packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
            'readxl', 'gifski', 'gapminder','quantmod','shinythemes',
            'treemap', 'treemapify','ggridges','zoo','reactablefmtr','crosstalk',
            'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
-           'lubridate','shiny','tools','writexl')
+           'lubridate','shiny','tools','writexl','heatmaply','ggHoriPlot')
 
 for (p in packages){
   library(p, character.only=T)
@@ -39,6 +39,7 @@ ParticipantMonthlySpark<-readRDS("data/Q2/ParticipantMonthlySpark.rds")
 
 InterestGroupGraph<-readRDS("data/Q2/InterestGroupGraph.rds")
 StatusLogDetails<-readRDS("data/Q2/StatusLogDetails.rds")
+EducationExpenseCategory<-readRDS("data/Q2/EducationExpenseCategory.rds")
 
 
 #### Q3 ####
@@ -511,7 +512,19 @@ ui <- navbarPage(
                                                         "H"="H"))),
                         
                         
-                        column(9,plotOutput("InterestGroups")))
+                        column(9,plotOutput("InterestGroups"))),
+                      fluidRow(
+                        column(3,selectInput(inputId = "category", 
+                                             label =   "Select the Category",
+                                             c("Education" = "Education",
+                                               "Food" = "Food",
+                                               "Recreation" = "Recreation",
+                                               "Shelter" = "Shelter"),
+                                             multiple=TRUE,
+                                             selected = c("Food","Education"))),
+                        column(9,plotlyOutput("HeatMapGroup"))
+                        
+                      )
                       
                       
              )
@@ -795,7 +808,36 @@ server <- function(input, output){
   ########################## Q2 ########################## 
   NumberOfParicipants<-Participants%>%
     tally()
+  
+  output$HeatMapGroup<-renderPlotly({
+    
+    ParticipantsExpenseCategory<-EducationExpenseCategory
+    
+    row.names(ParticipantsExpenseCategory) <- ParticipantsExpenseCategory$participantId
+    ParticipantsExpenseCategory <-
+      select(ParticipantsExpenseCategory,input$category)
+    ParticipantsExpenseCategory_matrix <- data.matrix(ParticipantsExpenseCategory)
+    heatmaply(normalize(ParticipantsExpenseCategory_matrix),
+              Colv=NA,
+              seriate = "none",
+              colors = Blues,
+              k_row = 3,
+              margins = c(NA,200,60,NA),
+              fontsize_row = 4,
+              fontsize_col = 5,
+              main="Participants and their financial status \nDataTransformation using Normalise Method",
+              xlab = "Categories",
+              ylab = "ParticipantId"
+    )
+    
+    
+    
+  })
+  
   #### tmap #### 
+  
+  
+  
   output$FinLocation<-renderPlot({
     z<-ParticipantSavings%>%
       st_as_sf(wkt="currentLocation")
