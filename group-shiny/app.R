@@ -1113,7 +1113,7 @@ server <- function(input, output){
                            high = "#FF0000")+
       labs(x = NULL,
            y = NULL,
-           title = "Is it all work and no play?")+
+           title = "How are weekly trends?")+
       theme_ipsum()+
       guides(fill = guide_colourbar(barwidth = 0.5,
                                     barheight = 5))+
