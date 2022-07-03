@@ -14,26 +14,27 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
 
 
 ########################## Reading the files ########################## 
+
 UserGuide <- file_temp("UserGuide.pdf", tmp_dir = "www", ext = ".pdf")
-#all_wday <- readRDS('data/all_wday.rds')
-all <- readRDS('data/all.rds')
-restaurants <- readRDS('data/restaurants.rds')
-pubs <- readRDS('data/pubs.rds')
-all_monthly <- readRDS('data/all_monthly.rds')
+
+
+
+all <- readRDS('data/Q1/all.rds')
+all_monthly <- readRDS('data/Q1/all_monthly.rds')
 
 lvl <- c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 
 #### Q2 ####
-Participants<-read_csv("data/Participants.csv",show_col_types = FALSE)
-ParticipantsApartmentLocation<-read_csv("data/ParticipantsApartmentLocation.csv",show_col_types = FALSE)
-buildings<-read_sf("data/Buildings.csv", 
+Participants<-read_csv("data/Q2/Participants.csv",show_col_types = FALSE)
+ParticipantsApartmentLocation<-read_csv("data/Q2/ParticipantsApartmentLocation.csv",show_col_types = FALSE)
+buildings<-read_sf("data/Q2/Buildings.csv", 
                    options = "GEOM_POSSIBLE_NAMES=location")
 
 ParticipantSavings<-readRDS("data/Q2/ParticipantSavings.rds")
 FinHealth<-readRDS("data/Q2/FinHealth.rds")
 ParticipantMonthlySavings<-readRDS("data/Q2/ParticipantMonthlySavings.rds")
 ParticipantMonthlySpark<-readRDS("data/Q2/ParticipantMonthlySpark.rds")
-buildings<-read_sf("data/Buildings.csv", 
+buildings<-read_sf("data/Q2/Buildings.csv", 
                    options = "GEOM_POSSIBLE_NAMES=location")
 
 InterestGroupGraph<-readRDS("data/Q2/InterestGroupGraph.rds")
@@ -79,8 +80,16 @@ ui <- navbarPage(
   fluid = TRUE,
   theme=shinytheme("cosmo"),
   id = "navbarID",
-  tabPanel("User Guide",
-           htmlOutput("frame")),
+  tabPanel("Introduction",
+           h1("Welcome to our App!"),
+           
+           
+           mainPanel(
+             tags$a(href="https://github.com/safeincraziworld/isss608-group-shiny/blob/master/group-shiny/www/UserGuide.pdf", "Click Here for user guide!"),
+             img(src = "Graph1.png",height="auto",width="auto"))),
+      
+  
+  
   navbarMenu("Businesses in Town",
              tabPanel("Customer Visits",
                       titlePanel("Is the business more prosperous on weekdays or weekends?"),
@@ -560,6 +569,98 @@ ui <- navbarPage(
 ############################## Shiny Server #################################
 
 server <- function(input, output){
+  
+  output$Introduction<-renderPlot({
+    
+    s1<-ggplot(data = diamonds, mapping = aes(x = clarity, y=x)) + geom_boxplot()+
+      theme_void()+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")+
+      scale_y_continuous(NULL,breaks = NULL)+
+      scale_fill_brewer(palette="Set3")
+    
+    
+    s2<-ggplot(diamonds,aes(x=depth,color=cut))+
+      geom_density()+
+      theme_void()+
+      theme(axis.title.y=element_blank(),axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")+
+      scale_y_continuous(NULL,breaks = NULL)
+    
+    s3<-ggplot(data = diamonds, mapping = aes(x = clarity)) + geom_bar(aes(fill = cut))+
+      theme_void()+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")+
+      scale_y_continuous(NULL,breaks = NULL)+
+      scale_fill_brewer(palette="Set3")
+    
+    fair_diamonds <- diamonds %>%
+      filter(cut == "Fair")
+    
+    s5<-ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) + geom_point() + 
+      geom_line()+
+      theme_void()+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")+
+      scale_y_continuous(NULL,breaks = NULL)
+    
+    s6<-ggplot(data = diamonds) +
+      geom_bar(mapping = aes(x = cut, fill = cut), width = 1, show.legend = FALSE) +
+      coord_polar() +
+      theme_void()+
+      labs(title = "", x = NULL, y = NULL)+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")+
+      scale_y_continuous(NULL,breaks = NULL)
+    
+    s7<-ggplot(diamonds, aes(x = cut, y = price, fill = cut)) +
+      geom_violin() +
+      scale_y_log10()+
+      scale_fill_brewer()+
+      theme_void()+
+      labs(title = "", x = NULL, y = NULL)+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")
+    s8<-ggplot(diamonds, aes(cut, color)) +
+      geom_jitter(aes(color = cut), size = 0.5)+
+      theme_void()+
+      labs(title = "", x = NULL, y = NULL)+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")
+    
+    s9<-ggplot(diamonds[1:100, c("color", "depth")], aes(depth, y = color,
+                                                         fill = 0.5 - abs(0.5 - stat(ecdf)))) +
+      stat_density_ridges(geom = "density_ridges_gradient", calc_ecdf = TRUE) +
+      scale_fill_gradient(low = "white", high = "#87CEFF",
+                          name = "Tail prob.")+
+      theme_void()+
+      labs(title = "", x = NULL, y = NULL)+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")
+    
+    s10<-ggplot(iris, aes(Species, Sepal.Width)) + 
+      ggdist::stat_halfeye(adjust = .5, width = .3, .width = 0, justification = -.3, point_colour = NA,fill="pink") + 
+      geom_boxplot(width = .1, outlier.shape = NA) +
+      gghalves::geom_half_point(side = "l", range_scale = 0, shape = 95, size = 15, alpha = .3)+
+      theme_void()+
+      labs(title = "", x = NULL, y = NULL)+
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),legend.position="none")
+    p<-(s3 + s2/s7) / (s1 + s5+s6)/(s9+s10)
+    p
+    
+  })
+  
+  
   
   output$frame <- renderUI({
     link<<-paste0("https://github.com/safeincraziworld/isss608-group-shiny/blob/master/group-shiny/www/UserGuide.pdf")
