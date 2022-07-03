@@ -236,7 +236,9 @@ ui <- navbarPage(
                                                "Dec 2022" = "Dec 2022",
                                                "Jan 2023" = "Jan 2023",
                                                "Feb 2023" = "Feb 2023",
-                                              "Mar 2023"="Mar 2023"
+                                              "Mar 2023"="Mar 2023",
+                                              "Apr 2023"="Apr 2023",
+                                              "May 2023"="May 2023"
                                               ),
                                              multiple=TRUE,
                                              selected = "Nov 2022"))
