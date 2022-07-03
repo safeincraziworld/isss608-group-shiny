@@ -3,17 +3,6 @@
 # packages <- c('shiny', 'shinydashboard', 'shinythemes', 
 #               'tidyverse', 'ggplot2', 'plotly')
 
-<<<<<<< HEAD
-packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
-           'DT', 'patchwork','gglorenz','hrbrthemes','shinydashboard',
-           'gganimate', 'tidyverse','ggthemes','reactable',
-           'readxl', 'gifski', 'gapminder','quantmod','shinythemes',
-           'treemap', 'treemapify','ggridges','zoo','reactablefmtr','crosstalk',
-           'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
-           'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect',
-           'heatmaply','ggHoriPlot')
-=======
->>>>>>> dcee73f2719088b306ba48c2174781df6ecedeb2
 
 pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
            DT, patchwork, gglorenz, hrbrthemes, shinydashboard,
@@ -26,7 +15,7 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
 
 ########################## Reading the files ########################## 
 
-#all_wday <- readRDS('data/all_wday.rds')
+##### Q1 #####
 all <- readRDS('data/all.rds')
 restaurants <- readRDS('data/restaurants.rds')
 pubs <- readRDS('data/pubs.rds')
@@ -289,7 +278,7 @@ workinmoreplaces <- readRDS("data/Q3/workinmoreplaces.rds")
 
 partid = c(logs_path_PrevJob$participantId)
 
-###################### drilldown bar graph #############3
+###################### drilldown bar graph #############
 
 alias <- switchEmployeesAllDetails
 alias$participantId=as.numeric(alias$participantId)
@@ -302,7 +291,7 @@ morePlacesPayChange <- left_join(x = alias,
 ui <- navbarPage(
   title = "Financial Health of the city",
   fluid = TRUE,
-  theme=shinytheme("united"),
+  theme=shinytheme("cosmo"),
   id = "navbarID",
   tabPanel("User Guide"),
   navbarMenu("Businesses in Town",
@@ -561,12 +550,9 @@ ui <- navbarPage(
              )
              
   ),
-<<<<<<< HEAD
   ####
-=======
-  #####
+
   
->>>>>>> dcee73f2719088b306ba48c2174781df6ecedeb2
   navbarMenu("Employment & Turnover",
              tabPanel("Turnover Analysis",
                       fluidPage(
