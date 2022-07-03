@@ -12,10 +12,6 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
            lubridate, shiny, tools, writexl, ggHoriPlot, rsconnect)
 
 
-for (p in packages){
-  library(p, character.only=T)
-}
-
 ########################## Reading the files ########################## 
 
 #all_wday <- readRDS('data/all_wday.rds')
