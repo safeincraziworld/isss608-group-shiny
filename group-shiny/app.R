@@ -8,7 +8,7 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
            DT, patchwork, gglorenz, hrbrthemes,shinydashboard,
            gganimate, tidyverse, ggthemes, reactable,
            readxl, gifski, gapminder, quantmod, shinythemes,
-           treemap, treemapify, ggridges, zoo, reactablefmtr, crosstalk,
+           treemap, treemapify, ggridges,dataui,zoo, reactablefmtr, crosstalk,
            rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,
            lubridate, shiny, tools, writexl, ggHoriPlot, rsconnect,shinycssloaders)
 
