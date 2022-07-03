@@ -15,11 +15,8 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
 
 ########################## Reading the files ########################## 
 
-#all_wday <- readRDS('data/all_wday.rds')
-all <- readRDS('data/all.rds')
-restaurants <- readRDS('data/restaurants.rds')
-pubs <- readRDS('data/pubs.rds')
-all_monthly <- readRDS('data/all_monthly.rds')
+all <- readRDS('data/Q1/all.rds')
+all_monthly <- readRDS('data/Q1/all_monthly.rds')
 
 lvl <- c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 

@@ -93,7 +93,8 @@ all <- rbind(restaurants, pubs)
 ```{r}
 all <- all %>%
   mutate(weekday = wday(checkInTime, label= TRUE),
-         date = date(checkInTime))
+         date = date(checkInTime)) %>%
+  filter(as.yearmon(date) != 'May 2023' )
 
 pubs <- all %>%
   filter(locationType == 'Pub')
@@ -102,32 +103,12 @@ restaurants <- all %>%
   filter(locationType == 'Restaurant')
 ```
 
-
-# prepare data for weekday visualization
-
-```{r weekday plot}
-# visit records by weekday 
-all_wday <- all %>%
-  group_by(locationId, weekday) %>%
-  summarise(visits = n(),
-            revenue = sum(spending),
-            locationType = first(locationType))
-
-restaurant_wday <- all %>%
-  group_by(locationId, weekday) %>%
-  summarise(visits = n(),
-            revenue = sum(spending),
-            locationType = locationType)
-# filter = locationId & location type
-```
-
 # save rds for weekday visualization
 
 ```{r save rds}
-saveRDS(all, 'data/all.rds')
-saveRDS(all_wday, 'data/all_wday.rds')
-saveRDS(restaurants, 'data/restaurants.rds')
-saveRDS(pubs, 'data/pubs.rds')
+saveRDS(all, 'group-shiny/data/Q1/all.rds')
+saveRDS(restaurants, 'group-shiny/data/Q1/restaurants.rds')
+saveRDS(pubs, 'group-shiny/data/Q1/pubs.rds')
 ```
 
 ```{r}
@@ -180,7 +161,7 @@ all_monthly$`Month Year`
 # save rds for packed bar visualization
 
 ```{r save all_monthly}
-saveRDS(all_monthly, 'data/all_monthly.rds')
+saveRDS(all_monthly, 'group-shiny/data/Q1/all_monthly.rds')
 ```
 
 ```{r}
