@@ -26,7 +26,7 @@ lvl <- c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 #### Q2 ####
 Participants<-read_csv("data/Participants.csv",show_col_types = FALSE)
 ParticipantsApartmentLocation<-read_csv("data/ParticipantsApartmentLocation.csv",show_col_types = FALSE)
-buildings<-read_sf("data/buildings.csv", 
+buildings<-read_sf("data/Buildings.csv", 
                    options = "GEOM_POSSIBLE_NAMES=location")
 
 ParticipantSavings<-readRDS("data/Q2/ParticipantSavings.rds")
