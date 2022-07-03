@@ -5,9 +5,9 @@ account: i68pad-leslie
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 6585647
-bundleId: 6065182
+bundleId: 6065222
 url: https://i68pad-leslie.shinyapps.io/group-shiny/
-when: 1656839316.78469
-lastSyncTime: 1656839316.78473
+when: 1656841527.6332
+lastSyncTime: 1656841527.63327
 asMultiple: FALSE
 asStatic: FALSE
