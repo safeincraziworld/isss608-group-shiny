@@ -3,6 +3,7 @@
 # packages <- c('shiny', 'shinydashboard', 'shinythemes', 
 #               'tidyverse', 'ggplot2', 'plotly')
 
+<<<<<<< HEAD
 packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
            'DT', 'patchwork','gglorenz','hrbrthemes','shinydashboard',
            'gganimate', 'tidyverse','ggthemes','reactable',
@@ -11,11 +12,17 @@ packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
            'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
            'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect',
            'heatmaply','ggHoriPlot')
+=======
+>>>>>>> dcee73f2719088b306ba48c2174781df6ecedeb2
 
+pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
+           DT, patchwork, gglorenz, hrbrthemes, shinydashboard,
+           gganimate, tidyverse, ggthemes, reactable,
+           readxl, gifski, gapminder, quantmod, shinythemes,
+           treemap, treemapify, ggridges, zoo, reactablefmtr, crosstalk,
+           rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,
+           lubridate, shiny, tools, writexl, ggHoriPlot, rsconnect)
 
-for (p in packages){
-  library(p, character.only=T)
-}
 
 ########################## Reading the files ########################## 
 
@@ -554,7 +561,12 @@ ui <- navbarPage(
              )
              
   ),
+<<<<<<< HEAD
   ####
+=======
+  #####
+  
+>>>>>>> dcee73f2719088b306ba48c2174781df6ecedeb2
   navbarMenu("Employment & Turnover",
              tabPanel("Turnover Analysis",
                       fluidPage(
