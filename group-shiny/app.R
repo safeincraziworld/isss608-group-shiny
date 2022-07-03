@@ -1,23 +1,16 @@
 ########################## Packages in use ########################## 
 
-# packages <- c('shiny', 'shinydashboard', 'shinythemes', 
-#               'tidyverse', 'ggplot2', 'plotly')
 
-
-pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
-               DT, patchwork, gglorenz, hrbrthemes,shinydashboard,
-               gganimate, tidyverse, ggthemes, reactable,
-               readxl, gifski, gapminder, quantmod, shinythemes,
-               treemap, treemapify, ggridges,dataui,zoo, reactablefmtr, crosstalk,
-               rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,fs,
-               lubridate, shiny, tools, writexl, ggHoriPlot,heatmaply ,rsconnect,shinycssloaders)
+pacman::p_load(plotly, psych, sf, tmap, DT, gglorenz, 
+               hrbrthemes, shinydashboard, tools,
+               tidyverse, ggthemes, reactable,
+               gapminder, quantmod, shinythemes,
+               treemap, dataui, reactablefmtr, crosstalk,
+               rPackedBar, shiny, ggHoriPlot, heatmaply , 
+               rsconnect, shinycssloaders)
 
 
 ########################## Reading the files ########################## 
-
-UserGuide <- file_temp("UserGuide.pdf", tmp_dir = "www", ext = ".pdf")
-
-
 
 all <- readRDS('data/Q1/all.rds')
 all_monthly <- readRDS('data/Q1/all_monthly.rds')
@@ -86,7 +79,7 @@ ui <- navbarPage(
            
            mainPanel(
              tags$a(href="https://github.com/safeincraziworld/isss608-group-shiny/blob/master/group-shiny/www/UserGuide.pdf", "Click Here for user guide!"),
-             img(src = "Graph1.png",height="auto",width="auto"))),
+             img(src = "Graph1.png",height="700",width="auto"))),
       
   
   
@@ -569,98 +562,6 @@ ui <- navbarPage(
 ############################## Shiny Server #################################
 
 server <- function(input, output){
-  
-  output$Introduction<-renderPlot({
-    
-    s1<-ggplot(data = diamonds, mapping = aes(x = clarity, y=x)) + geom_boxplot()+
-      theme_void()+
-      theme(axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")+
-      scale_y_continuous(NULL,breaks = NULL)+
-      scale_fill_brewer(palette="Set3")
-    
-    
-    s2<-ggplot(diamonds,aes(x=depth,color=cut))+
-      geom_density()+
-      theme_void()+
-      theme(axis.title.y=element_blank(),axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")+
-      scale_y_continuous(NULL,breaks = NULL)
-    
-    s3<-ggplot(data = diamonds, mapping = aes(x = clarity)) + geom_bar(aes(fill = cut))+
-      theme_void()+
-      theme(axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")+
-      scale_y_continuous(NULL,breaks = NULL)+
-      scale_fill_brewer(palette="Set3")
-    
-    fair_diamonds <- diamonds %>%
-      filter(cut == "Fair")
-    
-    s5<-ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) + geom_point() + 
-      geom_line()+
-      theme_void()+
-      theme(axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")+
-      scale_y_continuous(NULL,breaks = NULL)
-    
-    s6<-ggplot(data = diamonds) +
-      geom_bar(mapping = aes(x = cut, fill = cut), width = 1, show.legend = FALSE) +
-      coord_polar() +
-      theme_void()+
-      labs(title = "", x = NULL, y = NULL)+
-      theme(axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")+
-      scale_y_continuous(NULL,breaks = NULL)
-    
-    s7<-ggplot(diamonds, aes(x = cut, y = price, fill = cut)) +
-      geom_violin() +
-      scale_y_log10()+
-      scale_fill_brewer()+
-      theme_void()+
-      labs(title = "", x = NULL, y = NULL)+
-      theme(axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")
-    s8<-ggplot(diamonds, aes(cut, color)) +
-      geom_jitter(aes(color = cut), size = 0.5)+
-      theme_void()+
-      labs(title = "", x = NULL, y = NULL)+
-      theme(axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")
-    
-    s9<-ggplot(diamonds[1:100, c("color", "depth")], aes(depth, y = color,
-                                                         fill = 0.5 - abs(0.5 - stat(ecdf)))) +
-      stat_density_ridges(geom = "density_ridges_gradient", calc_ecdf = TRUE) +
-      scale_fill_gradient(low = "white", high = "#87CEFF",
-                          name = "Tail prob.")+
-      theme_void()+
-      labs(title = "", x = NULL, y = NULL)+
-      theme(axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")
-    
-    s10<-ggplot(iris, aes(Species, Sepal.Width)) + 
-      ggdist::stat_halfeye(adjust = .5, width = .3, .width = 0, justification = -.3, point_colour = NA,fill="pink") + 
-      geom_boxplot(width = .1, outlier.shape = NA) +
-      gghalves::geom_half_point(side = "l", range_scale = 0, shape = 95, size = 15, alpha = .3)+
-      theme_void()+
-      labs(title = "", x = NULL, y = NULL)+
-      theme(axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),legend.position="none")
-    p<-(s3 + s2/s7) / (s1 + s5+s6)/(s9+s10)
-    p
-    
-  })
-  
-  
   
   output$frame <- renderUI({
     link<<-paste0("https://github.com/safeincraziworld/isss608-group-shiny/blob/master/group-shiny/www/UserGuide.pdf")
