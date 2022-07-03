@@ -9,7 +9,8 @@ packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
            'readxl', 'gifski', 'gapminder','quantmod','shinythemes',
            'treemap', 'treemapify','ggridges','zoo','reactablefmtr','crosstalk',
            'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
-           'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect')
+           'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect',
+           'heatmaply','ggHoriPlot')
 
 
 for (p in packages){
@@ -40,6 +41,9 @@ ParticipantMonthlySpark<-readRDS("data/Q2/ParticipantMonthlySpark.rds")
 InterestGroupGraph<-readRDS("data/Q2/InterestGroupGraph.rds")
 StatusLogDetails<-readRDS("data/Q2/StatusLogDetails.rds")
 EducationExpenseCategory<-readRDS("data/Q2/EducationExpenseCategory.rds")
+ExpenseProportionMonthly<-readRDS("data/Q2/EducationExpenseCategory.rds")
+
+
 
 
 #### Q3 ####
@@ -550,6 +554,7 @@ ui <- navbarPage(
              )
              
   ),
+  #####
   
   navbarMenu("Employment & Turnover",
              tabPanel("Turnover Analysis",
