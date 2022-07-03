@@ -9,12 +9,12 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
            gganimate, tidyverse, ggthemes, reactable,
            readxl, gifski, gapminder, quantmod, shinythemes,
            treemap, treemapify, ggridges,dataui,zoo, reactablefmtr, crosstalk,
-           rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,
+           rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,fs,
            lubridate, shiny, tools, writexl, ggHoriPlot,heatmaply ,rsconnect,shinycssloaders)
 
 
 ########################## Reading the files ########################## 
-
+UserGuide <- file_temp("UserGuide.pdf", tmp_dir = "www", ext = ".pdf")
 #all_wday <- readRDS('data/all_wday.rds')
 all <- readRDS('data/all.rds')
 restaurants <- readRDS('data/restaurants.rds')
@@ -79,7 +79,8 @@ ui <- navbarPage(
   fluid = TRUE,
   theme=shinytheme("cosmo"),
   id = "navbarID",
-  tabPanel("User Guide"),
+  tabPanel("User Guide",
+           htmlOutput("frame")),
   navbarMenu("Businesses in Town",
              tabPanel("Customer Visits",
                       sidebarLayout(
@@ -563,6 +564,13 @@ navbarMenu("Employment & Turnover",
 ############################## Shiny Server #################################
 
 server <- function(input, output){
+  
+  output$frame <- renderUI({
+    link<<-paste0("https://github.com/safeincraziworld/isss608-group-shiny/blob/master/group-shiny/www/UserGuide.pdf")
+    my_test <- tags$iframe(src=link, height=600, width=535)
+    print(my_test)
+    
+  })
   
   ############## Shiny Server: weekday visits ####################
   output$secondSelection <- renderUI({
