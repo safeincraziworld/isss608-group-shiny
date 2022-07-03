@@ -5,7 +5,7 @@
 
 
 pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
-           DT, patchwork, gglorenz, hrbrthemes, shinydashboard,
+           DT, patchwork, gglorenz, hrbrthemes,shinydashboard,
            gganimate, tidyverse, ggthemes, reactable,
            readxl, gifski, gapminder, quantmod, shinythemes,
            treemap, treemapify, ggridges, zoo, reactablefmtr, crosstalk,
@@ -26,8 +26,11 @@ lvl <- c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 #### Q2 ####
 Participants<-read_csv("data/Participants.csv",show_col_types = FALSE)
 ParticipantsApartmentLocation<-read_csv("data/ParticipantsApartmentLocation.csv",show_col_types = FALSE)
+<<<<<<< HEAD
 buildings<-read_sf("data/Buildings.csv", 
                    options = "GEOM_POSSIBLE_NAMES=location")
+=======
+>>>>>>> ecab563a955d3f84e649d44c82022ae771dd87be
 
 ParticipantSavings<-readRDS("data/Q2/ParticipantSavings.rds")
 FinHealth<-readRDS("data/Q2/FinHealth.rds")
@@ -524,7 +527,7 @@ navbarMenu("Employment & Turnover",
                                        
                                        
                               ),
-                              tabPanel("Emp location",
+                              tabPanel("Employers location",
                                        sidebarPanel(
                                          width = 4,
                                          height = 80,
