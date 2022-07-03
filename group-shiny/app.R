@@ -9,7 +9,8 @@ packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
            'readxl', 'gifski', 'gapminder','quantmod','shinythemes',
            'treemap', 'treemapify','ggridges','zoo','reactablefmtr','crosstalk',
            'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
-           'lubridate','shiny','tools','writexl','ggHoriPlot')
+           'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect')
+
 
 for (p in packages){
   library(p, character.only=T)
@@ -17,14 +18,13 @@ for (p in packages){
 
 ########################## Reading the files ########################## 
 
-#### Q1 ####
 #all_wday <- readRDS('data/all_wday.rds')
 all <- readRDS('data/all.rds')
 restaurants <- readRDS('data/restaurants.rds')
 pubs <- readRDS('data/pubs.rds')
+all_monthly <- readRDS('data/all_monthly.rds')
 
 lvl <- c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
-
 
 #### Q2 ####
 Participants<-read_csv("data/Participants.csv",show_col_types = FALSE)
@@ -295,30 +295,61 @@ ui <- navbarPage(
   id = "navbarID",
   tabPanel("User Guide"),
   navbarMenu("Businesses in Town",
-             tabPanel("Restaurants",
+             tabPanel("Customer Visits",
                       sidebarLayout(
                         sidebarPanel(width = 3,
-                                     selectInput(inputId = "locationId1",
-                                                 label = "Select Restaurant Id:",
-                                                 choices = sort(unique(restaurants$locationId)),
-                                                 selected = 445)
+                                     selectInput(inputId = 'locationType1',
+                                                 label= 'Select Business Type:',
+                                                 choices= c('Restaurant', 'Pub'),
+                                                 selected = 'Restaurant'),
+                                     uiOutput('secondSelection')
                         ),
                         mainPanel(width = 9,
-                                  plotlyOutput("lineplot1"))
+                                  plotlyOutput("lineplot"))
                       )
              ),
-             tabPanel("Pubs",
+             tabPanel("Revenue by Month",
                       sidebarLayout(
                         sidebarPanel(width = 3,
-                                     selectInput(inputId = "locationId2",
-                                                 label = "Select Pub Id:",
-                                                 choices = sort(unique(pubs$locationId)),
-                                                 selected = 442)
+                                     selectInput(inputId = "locationType2",
+                                                 label = 'Select Business Type:',
+                                                 choices= c('Restaurant', 'Pub'),
+                                                 selected = 'Restaurant'),
+                                     uiOutput('secondSelection2')
+                                     #sliderInput(inputId = 'duration',
+                                     #label = 'Select Duration in Months:',
+                                     #min = as.Date(min(all_monthly$mon)),
+                                     #max = as.Date(max(all_monthly$mon)),
+                                     #timeFormat = "%m-%Y",
+                                     #value = c(as.Date(min(all_monthly$mon)), 
+                                     #as.Date(max(all_monthly$mon))))
                         ),
                         mainPanel(width = 9,
-                                  plotlyOutput("lineplot2"))
+                                  plotlyOutput("lineplot2"))          
                       )),
-             tabPanel("Overall")),
+             tabPanel("Revenue by Rank",
+                      sidebarLayout(
+                        sidebarPanel(width = 3,
+                                     selectInput(inputId='month',
+                                                 label = 'Select Month:',
+                                                 choices = sort(unique(all_monthly$`Month Year`)),
+                                                 selected = 'Mar 2022')
+                        ),
+                        mainPanel(width= 9,
+                                  packedBarOutput("packedbar"))
+                      ))
+             #tabPanel('Business Location',
+             #sidebarLayout(
+             #sidebarPanel(width = 3,
+             #selectInput(inputId = ,
+             #label = ,
+             #choices = ,
+             #selected = )
+             #))
+             #)
+  ),
+  
+  #######
   navbarMenu("Q2",
              
              tabPanel("Q2.1",
@@ -728,71 +759,95 @@ ui <- navbarPage(
 
 server <- function(input, output){
   
-  ############## Shiny Server: restaurant weekday ####################
-  output$lineplot1 <- renderPlotly({
+  ############## Shiny Server: weekday visits ####################
+  output$secondSelection <- renderUI({
+    selectInput(inputId= 'locationId1',
+                label= 'Select Business ID:',
+                choices= sort(unique(all$locationId[all$locationType==input$locationType1])),
+                selected = 445)
+  })
+  output$lineplot <- renderPlotly({
     
-    restaurants1 <- restaurants %>%
-      group_by(locationId, date) %>%
+    all1 <- all %>%
+      group_by(locationType, locationId, date) %>%
       summarise(visits= n(),
                 weekday = first(weekday)) %>%
       ungroup() 
     
-    restaurants_mean <- restaurants1 %>%
+    all_mean <- all1 %>%
       group_by(locationId, weekday) %>%
       summarise(meanv = mean(visits)) %>%
       ungroup()
     
-    ggplotly(restaurants1 %>%
-      filter(locationId == input$locationId1) %>%
-      ggplot(aes(x= date,
-                 y = visits)) +
-      geom_line() +
-      geom_hline(data = restaurants_mean %>%
-                   filter(locationId==input$locationId1),
-                 aes(yintercept = meanv),
-                 color= '#20b2aa',
-                 linetype= 'dashed',
-                 size = .4) +
-      labs(x= 'Weekday', y= 'Number of Customer Visits',
-           title= paste0('Restaurant ', input$locationId1,
-           "'s Customer Visits Trend by Weekdays")) +
-      facet_grid(~ factor(weekday, levels = lvl))+
-        theme_bw())
+    ggplotly(all1 %>%
+               filter(locationId == input$locationId1) %>%
+               ggplot(aes(x= date,
+                          y = visits)) +
+               geom_line() +
+               geom_hline(data = all_mean %>%
+                            filter(locationId==input$locationId1),
+                          aes(yintercept = meanv),
+                          color= '#20b2aa',
+                          linetype= 'dashed',
+                          size = .8) +
+               labs(x= 'Weekday', y= 'Number of Customer Visits',
+                    title= paste0("Do Customers like to visit ", input$locationId1,
+                                  " on weekday or weekends?")) +
+               facet_grid(~ factor(weekday, levels = lvl))+
+               theme_bw() +
+               theme(axis.text.x = element_text(size=3.5))
+    )
   })
   
-  ############## Shiny Server: restaurant weekday ####################
+  ############## Shiny Server: monthly revenue ####################
+  
+  output$secondSelection2 <- renderUI({
+    selectInput(inputId= 'locationId2',
+                label= 'Select Business ID:',
+                choices= sort(unique(all_monthly$locationId[all_monthly$locationType==input$locationType2])),
+                selected = 445)
+  })
+  
   output$lineplot2 <- renderPlotly({
+    ggplotly(all_monthly %>%
+               filter(locationId==input$locationId2) %>%
+               ggplot(aes(x= `Month Year`, y= Revenue)) +
+               labs(x= 'Month Year', y = 'Revenue $',
+                    title= paste0("Is Business Looking Good for ", input$locationId2, "?")) +
+               geom_line() +
+               theme_bw()
+    )
     
-    pubs1 <- pubs %>%
-      group_by(locationId, date) %>%
-      summarise(visits= n(),
-                weekday = first(weekday)) %>%
-      ungroup() 
     
-    pubs_mean <- pubs1 %>%
-      group_by(locationId, weekday) %>%
-      summarise(meanv = mean(visits)) %>%
-      ungroup()
-    
-    ggplotly(pubs1 %>%
-      filter(locationId == input$locationId2) %>%
-      ggplot(aes(x= date,
-                 y = visits)) +
-      geom_line() +
-      geom_hline(data = pubs_mean %>%
-                   filter(locationId==input$locationId2),
-                 aes(yintercept = meanv),
-                 color= '#ff7f50',
-                 linetype= 'dashed',
-                 size = .4) +
-      labs(x= 'Weekday', y= 'Number of Customer Visits',
-           title= paste0('Pub ', input$locationId2,
-                         "'s Customer Visits Trend by Weekdays")) +
-      facet_grid(~ factor(weekday, levels = lvl))+
-        theme_bw())
-      
   })
   
+  ######################### packed bar ################################################
+  
+  output$packedbar <- renderPackedBar({
+    
+    all_mon <- all_monthly %>% 
+      filter(`Month Year` == input$month)
+    
+    p2 <- plotly_packed_bar(input_data = all_mon, 
+                            label_column = 'locationId',
+                            value_column = 'Revenue',
+                            number_rows = 20,
+                            plot_title = paste0("Business' Monthly Revenue in ",
+                                                input$month),  
+                            xaxis_label = 'Monthly Revenue',
+                            hover_label = 'Monthly Revenue',
+                            min_label_width = 0.02,
+                            color_bar_color = '#20b2aa',
+                            label_color = 'white') 
+    
+    p2 <- p2 %>%
+      layout(
+        xaxis= list(
+          ticktext = list('0', '$10K', '$20K', '$30K', '$40K', '$50K')
+        )
+      )
+    p2
+  })
   
   ########################## Q2 ########################## 
   NumberOfParicipants<-Participants%>%

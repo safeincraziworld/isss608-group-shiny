@@ -12,7 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 # import libraries
 
 ```{r library}
-packages = c('tidyverse', 'ggplot2', 'lubridate')
+packages = c('tidyverse', 'ggplot2', 'lubridate', 'treemap', 'plotly', 
+             'rPackedBar', 'zoo')
 for (p in packages){
   if(!require(p, character.only = T)){
     install.packages(p)
@@ -22,6 +23,49 @@ for (p in packages){
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# import raw data
+
+```{r import raw data, eval=FALSE}
+pubs <- read_csv('rawdata/Pubs.csv')
+restaurants <- read_csv('rawdata/Restaurants.csv')
+travel <- read_csv('rawdata/TravelJournal.csv')
+```
+
+# derive revenue for pubs and restaurants
+The following code chunk extracts travel records related to restaurants and pubs using `filter()` and derives spending of each visit using `inner_join()` and `mutate()`.
+
+```{r revenue, eval=FALSE}
+restaurantstr <- travel %>%
+  filter(purpose == 'Eating') %>% 
+  mutate(travelTime = travelEndTime - travelStartTime) %>%
+  select(-c(travelStartTime:travelEndTime, endingBalance)) %>%
+  inner_join(y= restaurants, 
+            by = c('travelEndLocationId'= 'restaurantId')) %>%
+  mutate(visitDuration = checkOutTime - checkInTime) %>%
+  select(-c(purpose, location, checkOutTime)) %>%
+  rename('restaurantId' = 'travelEndLocationId',
+         'spending' = 'foodCost')
+  
+
+pubstr <- travel %>%
+  filter(purpose == 'Recreation (Social Gathering)') %>%
+  mutate(travelTime = travelEndTime - travelStartTime) %>%
+  select(-c(travelStartTime: travelEndTime, endingBalance)) %>%
+  inner_join(y= pubs, 
+             by = c('travelEndLocationId'= 'pubId')) %>%
+  mutate(visitDuration = checkOutTime - checkInTime,
+         spending = as.numeric(visitDuration/60)* hourlyCost) %>%
+  select(-c(purpose, location, checkOutTime)) %>%
+  rename('pubId' = 'travelEndLocationId')
+```
+
+# save as rds
+
+```{r eval=FALSE}
+saveRDS(restaurantstr, 'rawdata/restaurants.rds')
+saveRDS(pubstr, 'rawdata/pubs.rds')
+```
 
 
 # read data
@@ -37,10 +81,12 @@ restaurants <- readRDS('rawdata/restaurants.rds')
 
 ```{r pub& restaurant}
 restaurants$hourlyCost <- NA
-restaurants$locationType <- 'restaurant'
-pubs$locationType <- 'pub'
+restaurants$locationType <- 'Restaurant'
+pubs$locationType <- 'Pub'
 restaurants <- rename(restaurants, locationId = restaurantId)
 pubs <- rename(pubs, locationId= pubId)
+restaurants$locationId <- paste('Restaurant', restaurants$locationId)
+pubs$locationId <- paste('Pub', pubs$locationId)
 all <- rbind(restaurants, pubs)
 ```
 
@@ -50,14 +96,14 @@ all <- all %>%
          date = date(checkInTime))
 
 pubs <- all %>%
-  filter(locationType == 'pub')
+  filter(locationType == 'Pub')
 
 restaurants <- all %>%
-  filter(locationType == 'restaurant')
+  filter(locationType == 'Restaurant')
 ```
 
 
-# visualization
+# prepare data for weekday visualization
 
 ```{r weekday plot}
 # visit records by weekday 
@@ -75,12 +121,13 @@ restaurant_wday <- all %>%
 # filter = locationId & location type
 ```
 
+# save rds for weekday visualization
 
 ```{r save rds}
-saveRDS(all, 'group-shiny/data/all.rds')
-saveRDS(all_wday, 'group-shiny/data/all_wday.rds')
-saveRDS(restaurants, 'group-shiny/data/restaurants.rds')
-saveRDS(pubs, 'group-shiny/data/pubs.rds')
+saveRDS(all, 'data/all.rds')
+saveRDS(all_wday, 'data/all_wday.rds')
+saveRDS(restaurants, 'data/restaurants.rds')
+saveRDS(pubs, 'data/pubs.rds')
 ```
 
 ```{r}
@@ -111,5 +158,66 @@ all1 %>%
   facet_grid(~ factor(weekday, levels = lvl)) +
   theme_bw()
   
+```
+
+```{r}
+#sort(unique(all[all$locationType=='restaurant', locationId]))
+```
+
+# prepare data for packed bar visualization
+
+```{r packed bar data}
+all_monthly <- all %>%
+  mutate(`Month Year` = as.yearmon(date)) %>%
+  group_by(locationType, locationId, `Month Year`) %>%
+  summarise(Revenue= sum(spending))
+```
+
+```{r}
+all_monthly$`Month Year`
+```
+
+# save rds for packed bar visualization
+
+```{r save all_monthly}
+saveRDS(all_monthly, 'data/all_monthly.rds')
+```
+
+```{r}
+max(all_monthly$mon)
+```
+
+```{r packed bar}
+
+all_mon <- all_monthly %>%
+  filter(mon== 'May 2022' &
+         locationType=='Restaurant')
+
+p <- plotly_packed_bar(input_data = all_mon , 
+                       label_column = 'locationId',
+                       value_column = 'Revenue',
+                       #number_rows = 20,
+                       plot_title = 'Monthly Revenue in Descending Order in May 2022', 
+                       xaxis_label = 'Monthly Revenue',
+                       hover_label = 'Monthly Revenue',
+                       min_label_width = 0.001,
+                       color_bar_color = '#ffa500',
+                       label_color = 'white') 
+
+p <- p %>%
+      layout(
+        xaxis= list(
+          ticktext = list('0', '$10K', '$20K', '$30K', '$40K', '$50K')
+        )
+      )
+    p
+#plotly::config(p1, displayModeBar = FALSE)
+```
+
+
+```{r line2 }
+ggplot(data= all_monthly %>% filter(locationId==442),
+  aes(x= mon, y = Revenue)) +
+  geom_line()
 ```
 
