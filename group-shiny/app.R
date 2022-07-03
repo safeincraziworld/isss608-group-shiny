@@ -21,16 +21,16 @@ all_monthly <- readRDS('data/Q1/all_monthly.rds')
 lvl <- c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 
 #### Q2 ####
-Participants<-read_csv("data/Participants.csv",show_col_types = FALSE)
-ParticipantsApartmentLocation<-read_csv("data/ParticipantsApartmentLocation.csv",show_col_types = FALSE)
-buildings<-read_sf("data/Buildings.csv", 
+Participants<-read_csv("data/Q2/Participants.csv",show_col_types = FALSE)
+ParticipantsApartmentLocation<-read_csv("data/Q2/ParticipantsApartmentLocation.csv",show_col_types = FALSE)
+buildings<-read_sf("data/Q2/Buildings.csv", 
                    options = "GEOM_POSSIBLE_NAMES=location")
 
 ParticipantSavings<-readRDS("data/Q2/ParticipantSavings.rds")
 FinHealth<-readRDS("data/Q2/FinHealth.rds")
 ParticipantMonthlySavings<-readRDS("data/Q2/ParticipantMonthlySavings.rds")
 ParticipantMonthlySpark<-readRDS("data/Q2/ParticipantMonthlySpark.rds")
-buildings<-read_sf("data/Buildings.csv", 
+buildings<-read_sf("data/Q2/Buildings.csv", 
                    options = "GEOM_POSSIBLE_NAMES=location")
 
 InterestGroupGraph<-readRDS("data/Q2/InterestGroupGraph.rds")
