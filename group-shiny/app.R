@@ -8,9 +8,9 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
            DT, patchwork, gglorenz, hrbrthemes,shinydashboard,
            gganimate, tidyverse, ggthemes, reactable,
            readxl, gifski, gapminder, quantmod, shinythemes,
-           treemap, treemapify, ggridges, zoo, reactablefmtr, crosstalk,
+           treemap, treemapify, ggridges,dataui,zoo, reactablefmtr, crosstalk,
            rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,
-           lubridate, shiny, tools, writexl, ggHoriPlot, rsconnect,shinycssloaders)
+           lubridate, shiny, tools, writexl, ggHoriPlot,heatmaply ,rsconnect,shinycssloaders)
 
 
 ########################## Reading the files ########################## 
@@ -232,7 +232,9 @@ ui <- navbarPage(
                                                "Dec 2022" = "Dec 2022",
                                                "Jan 2023" = "Jan 2023",
                                                "Feb 2023" = "Feb 2023",
-                                              "Mar 2023"="Mar 2023"
+                                              "Mar 2023"="Mar 2023",
+                                              "Apr 2023"="Apr 2023",
+                                              "May 2023"="May 2023"
                                               ),
                                              multiple=TRUE,
                                              selected = "Nov 2022"))
@@ -1107,7 +1109,7 @@ server <- function(input, output){
                            high = "#FF0000")+
       labs(x = NULL,
            y = NULL,
-           title = "Is it all work and no play?")+
+           title = "How are weekly trends?")+
       theme_ipsum()+
       guides(fill = guide_colourbar(barwidth = 0.5,
                                     barheight = 5))+
