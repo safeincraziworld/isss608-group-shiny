@@ -83,6 +83,7 @@ ui <- navbarPage(
            htmlOutput("frame")),
   navbarMenu("Businesses in Town",
              tabPanel("Customer Visits",
+                      titlePanel("Is the business more prosperous on weekdays or weekends?"),
                       sidebarLayout(
                         sidebarPanel(width = 3,
                                      selectInput(inputId = 'locationType1',
@@ -96,6 +97,7 @@ ui <- navbarPage(
                       )
              ),
              tabPanel("Revenue by Month",
+                      titlePanel("Is business revenue growing or diminishing?"),
                       sidebarLayout(
                         sidebarPanel(width = 3,
                                      selectInput(inputId = "locationType2",
@@ -103,18 +105,12 @@ ui <- navbarPage(
                                                  choices= c('Restaurant', 'Pub'),
                                                  selected = 'Restaurant'),
                                      uiOutput('secondSelection2')
-                                     #sliderInput(inputId = 'duration',
-                                     #label = 'Select Duration in Months:',
-                                     #min = as.Date(min(all_monthly$mon)),
-                                     #max = as.Date(max(all_monthly$mon)),
-                                     #timeFormat = "%m-%Y",
-                                     #value = c(as.Date(min(all_monthly$mon)), 
-                                     #as.Date(max(all_monthly$mon))))
                         ),
                         mainPanel(width = 9,
                                   shinycssloaders::withSpinner(plotlyOutput("lineplot2")))          
                       )),
              tabPanel("Revenue by Rank",
+                      titlePanel("Which businesses have the highest monthly revenue?"),
                       sidebarLayout(
                         sidebarPanel(width = 3,
                                      selectInput(inputId='month',
