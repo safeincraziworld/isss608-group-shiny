@@ -9,7 +9,8 @@ packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
            'readxl', 'gifski', 'gapminder','quantmod','shinythemes',
            'treemap', 'treemapify','ggridges','zoo','reactablefmtr','crosstalk',
            'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
-           'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect')
+           'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect',
+           'heatmaply','ggHoriPlot')
 
 
 for (p in packages){
@@ -40,6 +41,9 @@ ParticipantMonthlySpark<-readRDS("data/Q2/ParticipantMonthlySpark.rds")
 InterestGroupGraph<-readRDS("data/Q2/InterestGroupGraph.rds")
 StatusLogDetails<-readRDS("data/Q2/StatusLogDetails.rds")
 EducationExpenseCategory<-readRDS("data/Q2/EducationExpenseCategory.rds")
+ExpenseProportionMonthly<-readRDS("data/Q2/EducationExpenseCategory.rds")
+
+
 
 
 #### Q3 ####
@@ -550,7 +554,7 @@ ui <- navbarPage(
              )
              
   ),
-  
+  ####
   navbarMenu("Employment & Turnover",
              tabPanel("Turnover Analysis",
                       fluidPage(
@@ -1199,46 +1203,69 @@ server <- function(input, output){
     
     #ParticipantMonthlySparkShared<-SharedData$new(ParticipantMonthlySparkData)
     
-    StatusLogDetailsExpenseData<-StatusLogDetails%>%
+    ExpenseProportionMonthlyData<-ExpenseProportionMonthly%>%
       filter(Month %in% input$Months)%>%
-      filter(Weekday %in% input$Week)%>%
-      filter(category %in% input$categorySelected)%>%
-      group_by(participantId)%>%
-      summarise(Expense=sum(TotalAmount)*-1)
+      select(participantId,PropEducation,PropFood,PropShelter,PropRecreation)
     
-    StatusLogDetailsEarningData<-StatusLogDetails%>%
-      filter(Month %in% input$Months)%>%
-      filter(Weekday %in% input$Week)%>%
-      filter(category =="Wage")%>%
-      group_by(participantId)%>%
-      summarise(Earn=sum(TotalAmount)*-1)
-    StatusLogDetailseData<-left_join(y=StatusLogDetailsExpenseData,
-                                     x=StatusLogDetailsEarningData,
-                                     by=c("participantId"="participantId"))
+    # StatusLogDetailsExpenseData<-StatusLogDetails%>%
+    #   filter(Month %in% input$Months)%>%
+    #   filter(Weekday %in% input$Week)%>%
+    #   filter(category %in% input$categorySelected)%>%
+    #   group_by(participantId)%>%
+    #   summarise(Expense=sum(TotalAmount)*-1)
+    # 
+    # StatusLogDetailsEarningData<-StatusLogDetails%>%
+    #   filter(Month %in% input$Months)%>%
+    #   filter(Weekday %in% input$Week)%>%
+    #   filter(category =="Wage")%>%
+    #   group_by(participantId)%>%
+    #   summarise(Earn=sum(TotalAmount)*-1)
+    # StatusLogDetailseData<-left_join(y=StatusLogDetailsExpenseData,
+    #                                  x=StatusLogDetailsEarningData,
+    #                                  by=c("participantId"="participantId"))
     reactable(
-      StatusLogDetailseData,
+      ExpenseProportionMonthlyData,
       columns = list(
         participantId = colDef(maxWidth = 120),
-        `Earn` = colDef(
-          name = 'Wage',
-          minWidth = 150,
-          align = 'right',
-          
-          cell = data_bars(
-            data = StatusLogDetailseData,
-            text_position = 'outside-end',
-            fill_color = viridis::mako(5),
+        `PropEducation` = colDef(
+          name = 'Education (%)',
+          cell = bubble_grid(
+            data = ExpenseProportionMonthlyData,
+            colors = '#4F6D7A',
+            min_value=0,
+            max_value=10,
             number_fmt = scales::number_format(accuracy = 0.01)
           )
         ),
-        `Expense` = colDef(
-          name = 'Expense',
-          minWidth = 150,
-          align = 'left',
-          cell = data_bars(
-            data = StatusLogDetailseData,
-            text_position = 'outside-end',
-            fill_color = viridis::mako(5),
+        `PropFood` = colDef(
+          name = 'Food (%)',
+          cell = bubble_grid(
+            data = ExpenseProportionMonthlyData,
+            colors = '#56A3A6',
+            min_value=0,
+            max_value=50,
+            number_fmt = scales::number_format(accuracy = 0.01)
+          )
+          
+        ),
+        `PropShelter` = colDef(
+          name = 'Shelter (%)',
+          cell = bubble_grid(
+            data = ExpenseProportionMonthlyData,
+            colors = '#E3B505',
+            min_value=0,
+            max_value=200,
+            number_fmt = scales::number_format(accuracy = 0.01)
+          )
+          
+        ),
+        `PropRecreation` = colDef(
+          name = 'Recreation (%)',
+          cell = bubble_grid(
+            data = ExpenseProportionMonthlyData,
+            colors = '#DB504A',
+            min_value=0,
+            max_value=100,
             number_fmt = scales::number_format(accuracy = 0.01)
           )
           
@@ -1367,6 +1394,7 @@ server <- function(input, output){
     
     ggplotly(lorenz)
   })
+  
   
   
   ########################## Q3 ########################## 
