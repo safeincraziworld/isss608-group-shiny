@@ -3,17 +3,6 @@
 # packages <- c('shiny', 'shinydashboard', 'shinythemes', 
 #               'tidyverse', 'ggplot2', 'plotly')
 
-<<<<<<< HEAD
-packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
-           'DT', 'patchwork','gglorenz','hrbrthemes','shinydashboard',
-           'gganimate', 'tidyverse','ggthemes','reactable',
-           'readxl', 'gifski', 'gapminder','quantmod','shinythemes',
-           'treemap', 'treemapify','ggridges','zoo','reactablefmtr','crosstalk',
-           'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
-           'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect',
-           'heatmaply','ggHoriPlot')
-=======
->>>>>>> dcee73f2719088b306ba48c2174781df6ecedeb2
 
 pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
            DT, patchwork, gglorenz, hrbrthemes, shinydashboard,
@@ -48,7 +37,7 @@ ParticipantMonthlySpark<-readRDS("data/Q2/ParticipantMonthlySpark.rds")
 InterestGroupGraph<-readRDS("data/Q2/InterestGroupGraph.rds")
 StatusLogDetails<-readRDS("data/Q2/StatusLogDetails.rds")
 EducationExpenseCategory<-readRDS("data/Q2/EducationExpenseCategory.rds")
-ExpenseProportionMonthly<-readRDS("data/Q2/EducationExpenseCategory.rds")
+ExpenseProportionMonthly<-readRDS("data/Q2/ExpenseProportionMonthly.rds")
 
 
 
@@ -65,222 +54,6 @@ prevEmp_sf <- readRDS("data/Q3/prevEmp_sf.rds")
 recntEmp_sf <- readRDS("data/Q3/recntEmp_sf.rds")
 switchEmployeesAllDetails <- readRDS("data/Q3/switchEmployeesAllDetails.rds")
 workinmoreplaces <- readRDS("data/Q3/workinmoreplaces.rds")
-
-########################## Q2 ########################## 
-
-# ######## Data Cleaning
-# 
-# PartMonthYear=FinancialJournal%>%
-#   mutate(Year=as.numeric(year(timestamp)),
-#          Month=as.character(timestamp,"%b %y"),
-#          MonthNumeric=as.numeric(month(timestamp)))%>%
-#   group_by(participantId,Year,Month,MonthNumeric,category)%>%
-#   summarise(TotalAmount=sum(amount))
-# 
-# ######## Getting the location of all participants
-# 
-# #ParticipantLog<-readRDS('data/logs_fread.rds')
-# #ParticipantsApartmentLocation<-ParticipantLog%>%
-# #  filter(currentMode=="AtHome")%>%
-# #  distinct(participantId,currentLocation)
-# #write_csv(ParticipantsApartmentLocation,"data/ParticipantsApartmentLocation.csv")
-# 
-# 
-# ######## Data for Time Series
-# PartDailyExpense<-FinancialJournal%>%
-#   mutate(date=date(timestamp))%>%
-#   group_by(participantId,date,category)%>%
-#   summarise(TotalAmount=sum(amount))
-# 
-# PartDetailsDailyExpense<-left_join(x=PartDailyExpense,
-#                                    y=Participants,
-#                                    by=c("participantId"="participantId")
-# )
-# 
-# 
-# 
-# 
-# ParticipantsFinancialJournal <- inner_join(x= PartMonthYear,
-#                                            y= Participants, 
-#                                            by= 'participantId')
-# 
-# 
-# ParticipantsFinancialJournalExpense=ParticipantsFinancialJournal%>%
-#   filter(category!='Wage')%>%
-#   group_by(participantId,Year,Month)%>%
-#   summarise(Expense=sum(TotalAmount)*-1)
-# 
-# ParticipantsFinancialJournalEarnings=ParticipantsFinancialJournal%>%
-#   filter(category=='Wage')%>%
-#   group_by(participantId,Year,Month)%>%
-#   summarise(Earn=sum(TotalAmount))
-# 
-# ParticipantsEarningsVsExpense <- left_join(
-#   x= ParticipantsFinancialJournalExpense, 
-#   y= ParticipantsFinancialJournalEarnings, 
-#   by= c('participantId'='participantId',
-#         'Year'='Year',
-#         'Month'='Month'))
-# 
-# 
-# FinHealth=ParticipantsFinancialJournal%>%
-#   group_by(Year,Month,category)%>%
-#   summarise(TotalAmount=sum(TotalAmount))
-# 
-# 
-# 
-# Expenditure=FinHealth%>%
-#   filter(category!='Wage' & category!='RentAdjustment')%>%
-#   group_by(Year,Month)%>%
-#   summarise(Expense=sum(TotalAmount)*-1)
-# 
-# Earnings=FinHealth%>%
-#   filter(category=='Wage')%>%
-#   group_by(Year,Month)%>%
-#   summarise(Earn=sum(TotalAmount))
-# 
-# 
-# EarningsVsExpense <- inner_join(
-#   x= Expenditure, 
-#   y= Earnings, 
-#   by= c('Year'='Year','Month'='Month'))
-# 
-# 
-# ParticipantMonthlySavings<-left_join(
-#   x=ParticipantsEarningsVsExpense,
-#   y=Participants,
-#   by='participantId')%>%
-#   mutate(Savings=Earn-Expense)
-# 
-# 
-# ParticipantSavings<-
-#   left_join(x=ParticipantMonthlySavings%>%
-#               group_by(participantId)%>%
-#               summarise(TotalSavings=sum(Savings),
-#                         TotalEarning=sum(Earn),
-#                         TotalExpense=sum(Expense)),
-#             y=Participants,
-#             by='participantId')%>%
-#   left_join(.,ParticipantsApartmentLocation,
-#             by='participantId')
-# 
-# # Data for Heat Map
-# 
-# #StatusLogDetails<-PartDetailsDailyExpense%>%
-# #  mutate(Weekday=weekdays(date),Month=zoo::as.yearmon(date,"%Y %m"))%>%
-# #  filter(category=='Food' | category=='Recreation')
-# 
-# #Data for candlestick
-# #DailyCurrentModeTime<-PartDetailsDailyExpense%>%
-# #  mutate(Weekday=weekdays(date),Month=zoo::as.yearmon(date,"%Y %m"))
-# 
-# 
-# # Open=DailyCurrentModeTime%>%
-# #   group_by(Month,category)%>%
-# #   filter(day(date)==max(day(date)))%>%
-# #   group_by(Month,category)%>%
-# #   summarise(OpenTimeSpent=mean(TotalAmount))
-# # 
-# # Close=DailyCurrentModeTime%>%
-# #   group_by(Month,category)%>%
-# #   filter(day(date)==min(day(date)))%>%
-# #   group_by(Month,category)%>%
-# #   summarise(CloseTimeSpent=mean(TotalAmount))
-# # 
-# # High=DailyCurrentModeTime%>%
-# #   group_by(Month,category)%>%
-# #   summarise(HighTimespent=max(TotalAmount))
-# # 
-# # Low=DailyCurrentModeTime%>%
-# #   group_by(Month,category)%>%
-# #   summarise(LowTimespent=min(TotalAmount))
-# # 
-# # 
-# # CandlestickData=left_join(High, Low, by= c('Month'='Month',
-# #                                            'category'='category')) %>%
-# #   left_join(., Open, by=c(
-# #     'Month'='Month',
-# #     'category'='category'))%>% 
-# #   left_join(., Close, by=c(
-# #     'Month'='Month',
-# #     'category'='category'))
-# 
-# ### Data for Sparklines
-# 
-# ParticipantMonthlySpark<-ParticipantMonthlySavings%>%
-#   group_by(participantId)%>%
-#   summarise(Expense=list(Expense),
-#             Earning=list(Earn))%>%
-#   left_join(.,Participants,
-#             by=c("participantId"="participantId"))
-# 
-# #ParticipantMonthlyEarningSpark<-ParticipantMonthlySavings%>%
-# #  group_by(participantId)%>%
-# #  summarise(Earning=list(Earn))
-# 
-# 
-# 
-# ######## Plots 
-# 
-# 
-# ### Time series ###
-# 
-# PartDailyExpense<-FinancialJournal%>%
-#   mutate(date=date(timestamp))%>%
-#   group_by(participantId,date,category)%>%
-#   summarise(TotalAmount=sum(amount))%>%
-#   filter(category!="Wage")%>%
-#   group_by(participantId,date)%>%
-#   summarise(Expense=sum(TotalAmount))
-# 
-# PartDetailsDailyExpense<-left_join(x=PartDailyExpense,
-#                                    y=Participants,
-#                                    by=c("participantId"="participantId"))
-# 
-# 
-# S<-PartDetailsDailyExpense%>%
-#   group_by(date,interestGroup)%>%
-#   summarise(Expense=sum(Expense))
-# 
-# 
-# InterestGroupGraph<-PartDetailsDailyExpense%>%
-#   group_by(date,interestGroup)%>%
-#   summarise(Expense=sum(Expense))
-
-
-### Coordinated Plot ###
-
-# PShighlighted <- highlight_key(ParticipantSavings%>%select(-TotalSavings))
-# Er <- ggplot(data=PShighlighted, 
-#              aes(x = TotalEarning,
-#                  y = joviality,
-#                  color=as.character(householdSize),
-#                  text=paste("Earning: ",round(TotalEarning,2),
-#                             "<br>Joviality: ",round(joviality,2),
-#                             "<br>Household Size: ",householdSize))) +
-#   geom_point(size=1)+
-#   xlab("Earning")+
-#   ylab("Joviality")
-# 
-# Ex <- ggplot(data=PShighlighted, 
-#              aes(x = TotalExpense,
-#                  y = joviality,
-#                  color=as.character(householdSize),
-#                  text=paste("Expense: ",round(TotalExpense,2),
-#                             "<br>Joviality: ",round(joviality,2),
-#                             "<br>Household Size: ",householdSize))) +
-#   geom_point(size=1)+
-#   ggtitle("Can money buy happiness?")+
-#   theme(legend.position="none")
-
-#FB<-highlight(subplot(ggplotly(Er,tooltip = c("text")),ggplotly(Ex,tooltip = c("text"))),"plotly_selected")
-#crosstalk::bscols(FB,DT::datatable(z,options = list(
-#  columnDefs = list(list(className = 'dt-center', targets = 5)),
-#  pageLength = 10,
-#  autoWidth = TRUE,
-#  scrollX = T,
-#  lengthMenu = c(5, 10, 15, 20))),
-#  widths = c(12,12))
 
 
 
@@ -361,9 +134,9 @@ ui <- navbarPage(
   ),
   
   #######
-  navbarMenu("Q2",
+  navbarMenu("Financial Health",
              
-             tabPanel("Q2.1",
+             tabPanel("Participants Health",
                       
                       fluidRow(
                         column(3,div(valueBoxOutput("value1"),style="color:white"),style="background-color:navy;width=100px"),
@@ -422,9 +195,10 @@ ui <- navbarPage(
                                                   height = "auto", 
                                                   inline = FALSE))
                       )),
-             tabPanel("Q2.2",
+             tabPanel("Wages vs Cost of living",
                       
-                      
+                      tabsetPanel(
+                        tabPanel("Overall Picture",
                       
                       
                       
@@ -438,39 +212,30 @@ ui <- navbarPage(
                                                     selected = "TotalEarning")),
                         column(9,plotlyOutput("LorenzCurve"))
                         
-                      ),
+                      )),
+                      tabPanel("Participant Details",
                       fluidRow(
-                        column(3,selectInput(inputId = "yaxis", 
-                                             label =   "Select the comparison",
-                                             choices =  c("Kids" = "haveKids",
-                                                          "HouseholdSize" = "householdSize",
-                                                          "Education Level" = "educationLevel"),
-                                             selected = "haveKids"
-                        )),
-                        column(3,selectInput(inputId = "categorySelected", 
-                                             label =   "Select the Category",
-                                             c("Education" = "Education",
-                                               "Food" = "Food",
-                                               "Recreation" = "Recreation",
-                                               "Shelter" = "Shelter"),
-                                             multiple=TRUE,
-                                             selected = "Food")),
-                        column(3,selectInput(inputId = "Week", 
-                                             label =   "Select the Week",
-                                             c("Monday"="Monday","Tuesday"="Tuesday",
-                                               "Wednesday"="Wednesday","Thursday"="Thursday",
-                                               "Friday"="Friday","Saturday"="Saturday","Sunday"="Sunday"),
-                                             multiple=TRUE,
-                                             selected = c("Monday","Tuesday",
-                                                          "Wednesday","Thursday",
-                                                          "Friday","Saturday","Sunday"))),
+                        
+          
+                        
                         
                         column(3,selectInput(inputId = "Months", 
                                              label =   "Select the Month",
-                                             c("Nov 2022" = "Nov 2022",
+                                             c("Mar 2022"="Mar 2022",
+                                              "Apr 2022"="Apr 2022",
+                                              "May 2022"="May 2022",
+                                              "Jun 2022"="Jun 2022",
+                                              "Jul 2022"="Jul 2022",
+                                              "Aug 2022"="Aug 2022",
+                                              "Sep 2022"="Sep 2022",
+                                              "Oct 2022"="Oct 2022",
+                                
+                                               "Nov 2022" = "Nov 2022",
                                                "Dec 2022" = "Dec 2022",
                                                "Jan 2023" = "Jan 2023",
-                                               "Feb 2023" = "Feb 2023"),
+                                               "Feb 2023" = "Feb 2023",
+                                              "Mar 2023"="Mar 2023"
+                                              ),
                                              multiple=TRUE,
                                              selected = "Nov 2022"))
                       ),
@@ -491,12 +256,31 @@ ui <- navbarPage(
                                                   width = "auto", 
                                                   height = "auto", 
                                                   inline = FALSE))
-                      ),
+                      )),
+                      tabPanel("Expenses",
                       fluidRow(
-                        column(6,plotOutput("ExpensesEachMonth")),
-                        column(6,plotOutput("HeatMap"))
+                        column(3,selectInput(inputId = "categorySelected", 
+                                             label =   "Select the Category",
+                                             c("Education" = "Education",
+                                               "Food" = "Food",
+                                               "Recreation" = "Recreation",
+                                               "Shelter" = "Shelter"),
+                                             multiple=TRUE,
+                                             selected = c("Food","Education","Shelter","Recreation"))),
+                        column(3,selectInput(inputId = "Week", 
+                                             label =   "Select the Week",
+                                             c("Monday"="Monday","Tuesday"="Tuesday",
+                                               "Wednesday"="Wednesday","Thursday"="Thursday",
+                                               "Friday"="Friday","Saturday"="Saturday","Sunday"="Sunday"),
+                                             multiple=TRUE,
+                                             selected = c("Monday","Tuesday",
+                                                          "Wednesday","Thursday",
+                                                          "Friday","Saturday","Sunday"))),
+                        
+                        
+                        column(12,plotOutput("HeatMap"))
                       ),
-                      
+                      )
                       
                       # fluidRow(
                       #   column(12,plotOutput("FinLocation")),
@@ -514,9 +298,11 @@ ui <- navbarPage(
                       
                       
                       
-             ),
+             )),
              
-             tabPanel("Q2.3",
+             tabPanel("Similarities between groups",
+                      tabsetPanel(
+                        tabPanel("Interest Groups",
                       fluidRow(column(12,reactableOutput("GroupsDashboard", 
                                                          width = "auto", 
                                                          height = "auto", 
@@ -531,7 +317,8 @@ ui <- navbarPage(
                                              "E"="E",
                                              "F"="F",
                                              "G"="G",
-                                             "H"="H"),
+                                             "H"="H",
+                                             "I"="I"),
                                            multiple = TRUE,
                                            selected = c("A" = "A",
                                                         "B" = "B",
@@ -540,10 +327,12 @@ ui <- navbarPage(
                                                         "E"="E",
                                                         "F"="F",
                                                         "G"="G",
-                                                        "H"="H"))),
+                                                        "H"="H",
+                                                        "I"="I"))),
                         
                         
-                        column(9,plotOutput("InterestGroups"))),
+                        column(9,plotOutput("InterestGroups")))),
+                      tabPanel("Cluster Analysis",
                       fluidRow(
                         column(3,selectInput(inputId = "category", 
                                              label =   "Select the Category",
@@ -555,19 +344,14 @@ ui <- navbarPage(
                                              selected = c("Food","Education"))),
                         column(9,plotlyOutput("HeatMapGroup"))
                         
-                      )
+                      )))
                       
                       
              )
              
   ),
-<<<<<<< HEAD
-  ####
-=======
-  #####
-  
->>>>>>> dcee73f2719088b306ba48c2174781df6ecedeb2
-  navbarMenu("Employment & Turnover",
+
+navbarMenu("Employment & Turnover",
              tabPanel("Turnover Analysis",
                       fluidPage(
                         titlePanel("What is the impact of job switch among participants ?"),
@@ -949,7 +733,7 @@ server <- function(input, output){
   })
   output$value3 <- renderValueBox({
     valueBox(
-      value=div(paste("8"),style="font-size:16px;")
+      value=div(paste("9"),style="font-size:16px;")
       ,subtitle = HTML('<b style = "padding-left:0px;font-size:10px">Groups</b>')
       ,icon = icon("user",lib='glyphicon')
       ,color = "yellow")   
@@ -1065,26 +849,6 @@ server <- function(input, output){
   
   output$GroupsDashboard <- renderReactable({
     
-    # if(input$HaveKidsDashboard!="All"){
-    #   ParticipantMonthlySparkData<-ParticipantMonthlySpark%>%
-    #     filter(householdSize %in% input$HouseHoldSizeDashboard)%>%
-    #     filter(haveKids==input$HaveKidsDashboard)%>%
-    #     filter(age>= input$age[1] & age<=input$age[2])%>%
-    #     filter(educationLevel %in% input$EducationDashboard)%>%
-    #     select(participantId,Earning,Expense,joviality)
-    # }
-    # else{
-    #   ParticipantMonthlySparkData<-ParticipantMonthlySpark%>%
-    #     filter(householdSize %in% input$HouseHoldSizeDashboard)%>%
-    #     filter(age>= input$age[1] & age<=input$age[2])%>%
-    #     filter(educationLevel %in% input$EducationDashboard)%>%
-    #     select(participantId,Earning,Expense,joviality)
-    # }
-    
-    
-    
-    
-    #ParticipantMonthlySparkShared<-SharedData$new(ParticipantMonthlySparkData)
     
     
     ParticipantSavings%>%
@@ -1097,6 +861,7 @@ server <- function(input, output){
         interestGroup=="F" ~"#82A3A1",
         interestGroup=="G" ~"#465362",
         interestGroup=="H" ~"#011936",
+        interestGroup=="I" ~"#012957",
       ))%>%
       select(participantId,interestGroup,interestGroup_colours,TotalEarning,TotalExpense,joviality)%>%
       reactable(
@@ -1165,7 +930,7 @@ server <- function(input, output){
     
     
     
-    #ParticipantMonthlySparkShared<-SharedData$new(ParticipantMonthlySparkData)
+    
     
     
     
@@ -1213,28 +978,13 @@ server <- function(input, output){
     
     
     
-    #ParticipantMonthlySparkShared<-SharedData$new(ParticipantMonthlySparkData)
+    
     
     ExpenseProportionMonthlyData<-ExpenseProportionMonthly%>%
       filter(Month %in% input$Months)%>%
       select(participantId,PropEducation,PropFood,PropShelter,PropRecreation)
     
-    # StatusLogDetailsExpenseData<-StatusLogDetails%>%
-    #   filter(Month %in% input$Months)%>%
-    #   filter(Weekday %in% input$Week)%>%
-    #   filter(category %in% input$categorySelected)%>%
-    #   group_by(participantId)%>%
-    #   summarise(Expense=sum(TotalAmount)*-1)
-    # 
-    # StatusLogDetailsEarningData<-StatusLogDetails%>%
-    #   filter(Month %in% input$Months)%>%
-    #   filter(Weekday %in% input$Week)%>%
-    #   filter(category =="Wage")%>%
-    #   group_by(participantId)%>%
-    #   summarise(Earn=sum(TotalAmount)*-1)
-    # StatusLogDetailseData<-left_join(y=StatusLogDetailsExpenseData,
-    #                                  x=StatusLogDetailsEarningData,
-    #                                  by=c("participantId"="participantId"))
+    
     reactable(
       ExpenseProportionMonthlyData,
       columns = list(
@@ -1243,7 +993,7 @@ server <- function(input, output){
           name = 'Education (%)',
           cell = bubble_grid(
             data = ExpenseProportionMonthlyData,
-            colors = '#4F6D7A',
+            colors = '#edf8e9',
             min_value=0,
             max_value=10,
             number_fmt = scales::number_format(accuracy = 0.01)
@@ -1275,7 +1025,7 @@ server <- function(input, output){
           name = 'Recreation (%)',
           cell = bubble_grid(
             data = ExpenseProportionMonthlyData,
-            colors = '#DB504A',
+            colors = '#f2f0f7',
             min_value=0,
             max_value=100,
             number_fmt = scales::number_format(accuracy = 0.01)
@@ -1303,16 +1053,6 @@ server <- function(input, output){
   
   
   
-  #output$CoordinatedPlot <- renderUI({
-  
-  #crosstalk::bscols(FB,DT::datatable(z,options = list(
-  #columnDefs = list(list(className = 'dt-center', targets = 5)),
-  #pageLength = 10,
-  #autoWidth = TRUE,
-  #scrollX = T,
-  #lengthMenu = c(5, 10, 15, 20))),
-  #widths = c(12,12))
-  #})
   
   
   
@@ -1341,9 +1081,7 @@ server <- function(input, output){
     
     
     
-    # ggplot(InterestGroupGraph%>%
-    #          filter(interestGroup %in% input$InterestGroup))+
-    #   geom_line(aes(x=date,y=log(Expense*-1),color=interestGroup))
+   
     
     
     
@@ -1402,7 +1140,7 @@ server <- function(input, output){
       scale_color_manual(values=c('darkgreen','blue'))+
       labs(caption="Source: https://www.investopedia.com/terms/l/lorenz-curve.asp")
     
-    #scale_color_manual(labels = c("Earnings", "Savings","Expense"))+
+    
     
     ggplotly(lorenz)
   })
