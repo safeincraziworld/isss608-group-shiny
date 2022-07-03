@@ -10,7 +10,7 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
            readxl, gifski, gapminder, quantmod, shinythemes,
            treemap, treemapify, ggridges, zoo, reactablefmtr, crosstalk,
            rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,
-           lubridate, shiny, tools, writexl, ggHoriPlot, rsconnect)
+           lubridate, shiny, tools, writexl, ggHoriPlot, rsconnect,shinycssloaders)
 
 
 ########################## Reading the files ########################## 
@@ -33,6 +33,8 @@ ParticipantSavings<-readRDS("data/Q2/ParticipantSavings.rds")
 FinHealth<-readRDS("data/Q2/FinHealth.rds")
 ParticipantMonthlySavings<-readRDS("data/Q2/ParticipantMonthlySavings.rds")
 ParticipantMonthlySpark<-readRDS("data/Q2/ParticipantMonthlySpark.rds")
+buildings<-read_sf("data/Buildings.csv", 
+                   options = "GEOM_POSSIBLE_NAMES=location")
 
 InterestGroupGraph<-readRDS("data/Q2/InterestGroupGraph.rds")
 StatusLogDetails<-readRDS("data/Q2/StatusLogDetails.rds")
@@ -89,7 +91,7 @@ ui <- navbarPage(
                                      uiOutput('secondSelection')
                         ),
                         mainPanel(width = 9,
-                                  plotlyOutput("lineplot"))
+                                  shinycssloaders::withSpinner(plotlyOutput("lineplot")))
                       )
              ),
              tabPanel("Revenue by Month",
@@ -109,7 +111,7 @@ ui <- navbarPage(
                                      #as.Date(max(all_monthly$mon))))
                         ),
                         mainPanel(width = 9,
-                                  plotlyOutput("lineplot2"))          
+                                  shinycssloaders::withSpinner(plotlyOutput("lineplot2")))          
                       )),
              tabPanel("Revenue by Rank",
                       sidebarLayout(
@@ -120,7 +122,7 @@ ui <- navbarPage(
                                                  selected = 'Mar 2022')
                         ),
                         mainPanel(width= 9,
-                                  packedBarOutput("packedbar"))
+                                  shinycssloaders::withSpinner(packedBarOutput("packedbar")))
                       ))
              #tabPanel('Business Location',
              #sidebarLayout(
@@ -134,10 +136,10 @@ ui <- navbarPage(
   ),
   
   #######
-  navbarMenu("Financial Health",
+  navbarMenu("Participants in Town",
              
              tabPanel("Participants Health",
-                      
+                      titlePanel("Are the Participants financially healthy?"),
                       fluidRow(
                         column(3,div(valueBoxOutput("value1"),style="color:white"),style="background-color:navy;width=100px"),
                         
@@ -190,13 +192,13 @@ ui <- navbarPage(
                                              value = c(min(participants$age),max(participants$age))))),
                       
                       fluidRow(
-                        column(12,reactableOutput("EarningReactableDashboard", 
+                        column(12,shinycssloaders::withSpinner(reactableOutput("EarningReactableDashboard", 
                                                   width = "auto", 
                                                   height = "auto", 
-                                                  inline = FALSE))
+                                                  inline = FALSE)))
                       )),
              tabPanel("Wages vs Cost of living",
-                      
+                      titlePanel("Are the participants spending more than they earn?"),
                       tabsetPanel(
                         tabPanel("Overall Picture",
                       
@@ -210,7 +212,7 @@ ui <- navbarPage(
                                                     c("Earning" = "TotalEarning",
                                                       "Expense" = "TotalExpense"),
                                                     selected = "TotalEarning")),
-                        column(9,plotlyOutput("LorenzCurve"))
+                        column(9,shinycssloaders::withSpinner(plotlyOutput("LorenzCurve")))
                         
                       )),
                       tabPanel("Participant Details",
@@ -252,10 +254,10 @@ ui <- navbarPage(
                       #   
                       # ),
                       fluidRow(
-                        column(12,reactableOutput("WagesExpenseDashboard", 
+                        column(12,shinycssloaders::withSpinner(reactableOutput("WagesExpenseDashboard", 
                                                   width = "auto", 
                                                   height = "auto", 
-                                                  inline = FALSE))
+                                                  inline = FALSE)))
                       )),
                       tabPanel("Expenses",
                       fluidRow(
@@ -278,7 +280,7 @@ ui <- navbarPage(
                                                           "Friday","Saturday","Sunday"))),
                         
                         
-                        column(12,plotOutput("HeatMap"))
+                        column(12,shinycssloaders::withSpinner(plotOutput("HeatMap")))
                       ),
                       )
                       
@@ -301,12 +303,13 @@ ui <- navbarPage(
              )),
              
              tabPanel("Similarities between groups",
+                      titlePanel("Can we find some similarity?"),
                       tabsetPanel(
                         tabPanel("Interest Groups",
-                      fluidRow(column(12,reactableOutput("GroupsDashboard", 
+                      fluidRow(column(12,shinycssloaders::withSpinner(reactableOutput("GroupsDashboard", 
                                                          width = "auto", 
                                                          height = "auto", 
-                                                         inline = FALSE))),
+                                                         inline = FALSE)))),
                       fluidRow(
                         column(3,
                                selectInput("InterestGroup", "Interest Group",
@@ -331,7 +334,7 @@ ui <- navbarPage(
                                                         "I"="I"))),
                         
                         
-                        column(9,plotOutput("InterestGroups")))),
+                        column(9,shinycssloaders::withSpinner(plotOutput("InterestGroups"))))),
                       tabPanel("Cluster Analysis",
                       fluidRow(
                         column(3,selectInput(inputId = "category", 
@@ -342,7 +345,7 @@ ui <- navbarPage(
                                                "Shelter" = "Shelter"),
                                              multiple=TRUE,
                                              selected = c("Food","Education"))),
-                        column(9,plotlyOutput("HeatMapGroup"))
+                        column(9,shinycssloaders::withSpinner(plotlyOutput("HeatMapGroup")))
                         
                       )))
                       
@@ -373,14 +376,14 @@ navbarMenu("Employment & Turnover",
                                        ),
                                        fluidRow(
                                          box("Commute route from home to work before job change (Marker- Ex Employer Location)",
-                                             plotOutput(outputId = "befRoute",
+                                             shinycssloaders::withSpinner(plotOutput(outputId = "befRoute",
                                                         width = 500,
                                                         height = 500),
-                                         ),
+                                         )),
                                          box("Commute route from home to work after job change  (Marker- New Employer Location)",
-                                             plotOutput(outputId  = "aftRoute",
+                                             shinycssloaders::withSpinner(plotOutput(outputId  = "aftRoute",
                                                         width = 500,
-                                                        height = 500)
+                                                        height = 500))
                                          )
                                        )
                                        
@@ -401,8 +404,8 @@ navbarMenu("Employment & Turnover",
                                          )),
                                        mainPanel(width = 25,
                                                  box(
-                                                   plotOutput("barPayPlot",
-                                                                width = "900px"))
+                                                   shinycssloaders::withSpinner(plotOutput("barPayPlot",
+                                                                width = "900px")))
                                                                 #height = "500px"))
                                        ),
                                        
@@ -415,15 +418,15 @@ navbarMenu("Employment & Turnover",
                                        mainPanel(
                                          fluidRow(
                                            column(6,
-                                                  plotlyOutput(
+                                                  shinycssloaders::withSpinner(plotlyOutput(
                                                     outputId="placesworked", 
                                                     width="500px",
-                                                    height="400px")),  
+                                                    height="400px"))),  
                                            column(6,
-                                                  plotlyOutput(
+                                                  shinycssloaders::withSpinner(plotlyOutput(
                                                     outputId="paychange", 
                                                     width="500px",
-                                                    height="400px"))
+                                                    height="400px")))
                                          ),
                                          
                                          #verbatimTextOutput("info")
@@ -470,8 +473,8 @@ navbarMenu("Employment & Turnover",
                                        
                                        mainPanel(width = 15,
                                                  box(
-                                                   plotlyOutput("rainPlot",
-                                                              height = "400px"))
+                                                   shinycssloaders::withSpinner(plotlyOutput("rainPlot",
+                                                              height = "400px")))
                                        ),
                                        
                                        DT::dataTableOutput(outputId = "rainPlotTable")
@@ -518,7 +521,7 @@ navbarMenu("Employment & Turnover",
                                            textOutput("readChart"),
                                          )
                                        ),
-                                       box(plotOutput("treemapPlot")),
+                                       box(shinycssloaders::withSpinner(plotOutput("treemapPlot"))),
                                        DT::dataTableOutput(outputId = "treemapTable")
                                        
                                        
@@ -543,7 +546,7 @@ navbarMenu("Employment & Turnover",
                                                        label = "Show data table",
                                                        value = TRUE)
                                        ),
-                                       box(tmapOutput("mapPlot")),
+                                       box(shinycssloaders::withSpinner(tmapOutput("mapPlot"))),
                                        DT::dataTableOutput(outputId = "aTable")
                                        
                               ),
