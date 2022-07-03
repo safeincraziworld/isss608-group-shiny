@@ -9,7 +9,7 @@ packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
            'readxl', 'gifski', 'gapminder','quantmod','shinythemes',
            'treemap', 'treemapify','ggridges','zoo','reactablefmtr','crosstalk',
            'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
-           'lubridate','shiny','tools','writexl','heatmaply','ggHoriPlot')
+           'lubridate','shiny','tools','writexl','ggHoriPlot')
 
 for (p in packages){
   library(p, character.only=T)
