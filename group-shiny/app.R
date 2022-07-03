@@ -10,7 +10,7 @@ pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
            readxl, gifski, gapminder, quantmod, shinythemes,
            treemap, treemapify, ggridges,dataui,zoo, reactablefmtr, crosstalk,
            rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,
-           lubridate, shiny, tools, writexl, ggHoriPlot, rsconnect,shinycssloaders)
+           lubridate, shiny, tools, writexl, ggHoriPlot,heatmaply ,rsconnect,shinycssloaders)
 
 
 ########################## Reading the files ########################## 
