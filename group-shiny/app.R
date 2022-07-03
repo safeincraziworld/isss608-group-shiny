@@ -43,27 +43,16 @@ EducationExpenseCategory<-readRDS("data/Q2/EducationExpenseCategory.rds")
 
 
 #### Q3 ####
-employers <- readRDS("data/Q3/employers.rds")
-empWorkinMultiplePlaces <- readRDS("data/Q3/empWorkinMultiplePlaces.rds")
-empWorkinMultiplePlaces_latest <- readRDS("data/Q3/empWorkinMultiplePlaces_latest.rds")
-empWorkinMultiplePlaces_latest_groupby <- readRDS("data/Q3/empWorkinMultiplePlaces_latest_groupby.rds")
-empWorkinMultiplePlaces_previous <- readRDS("data/Q3/empWorkinMultiplePlaces_previous.rds")
-empWorkinMultiplePlaces_previous_groupby <- readRDS("data/Q3/empWorkinMultiplePlaces_previous_groupby.rds")
+
 jobs <- readRDS("data/Q3/jobs.rds")
 logs_path_PrevJob <- readRDS("data/Q3/logs_path_PrevJob.rds")
 logs_path_RecJob <- readRDS("data/Q3/logs_path_RecJob.rds")
 no.ofjobs<- readRDS("data/Q3/no.ofjobs.rds")
 no.ofjobs_table <- readRDS("data/Q3/no.ofjobs_table.rds")
 participants <- readRDS("data/Q3/participants.rds")
-pay_hires <- readRDS("data/Q3/pay_hires.rds")
 prevEmp_sf <- readRDS("data/Q3/prevEmp_sf.rds")
 recntEmp_sf <- readRDS("data/Q3/recntEmp_sf.rds")
 switchEmployeesAllDetails <- readRDS("data/Q3/switchEmployeesAllDetails.rds")
-transitionEmpDetails <- readRDS("data/Q3/transitionEmpDetails.rds")
-transitionTable <- readRDS('data/Q3/transitionTable.rds')
-work <- readRDS("data/Q3/work.rds")
-work_home <- readRDS("data/Q3/work_home.rds")
-work_home_filt <- readRDS("data/Q3/work_home_filt.rds")
 workinmoreplaces <- readRDS("data/Q3/workinmoreplaces.rds")
 
 ########################## Q2 ########################## 
