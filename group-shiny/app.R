@@ -5,12 +5,12 @@
 
 
 pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
-           DT, patchwork, gglorenz, hrbrthemes,shinydashboard,
-           gganimate, tidyverse, ggthemes, reactable,
-           readxl, gifski, gapminder, quantmod, shinythemes,
-           treemap, treemapify, ggridges,dataui,zoo, reactablefmtr, crosstalk,
-           rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,fs,
-           lubridate, shiny, tools, writexl, ggHoriPlot,heatmaply ,rsconnect,shinycssloaders)
+               DT, patchwork, gglorenz, hrbrthemes,shinydashboard,
+               gganimate, tidyverse, ggthemes, reactable,
+               readxl, gifski, gapminder, quantmod, shinythemes,
+               treemap, treemapify, ggridges,dataui,zoo, reactablefmtr, crosstalk,
+               rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,fs,
+               lubridate, shiny, tools, writexl, ggHoriPlot,heatmaply ,rsconnect,shinycssloaders)
 
 
 ########################## Reading the files ########################## 
@@ -194,139 +194,129 @@ ui <- navbarPage(
                       
                       fluidRow(
                         column(12,shinycssloaders::withSpinner(reactableOutput("EarningReactableDashboard", 
-                                                  width = "auto", 
-                                                  height = "auto", 
-                                                  inline = FALSE)))
+                                                                               width = "auto", 
+                                                                               height = "auto", 
+                                                                               inline = FALSE)))
                       )),
              tabPanel("Wages vs Cost of living",
                       titlePanel("Are the participants spending more than they earn?"),
                       tabsetPanel(
                         tabPanel("Overall Picture",
-                      
-                      
-                      
-                      
-                      
-                      
-                      fluidRow(
-                        column(3,checkboxGroupInput("Lorenz", "Variables to show:",
-                                                    c("Earning" = "TotalEarning",
-                                                      "Expense" = "TotalExpense"),
-                                                    selected = "TotalEarning")),
-                        column(9,shinycssloaders::withSpinner(plotlyOutput("LorenzCurve")))
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 
+                                 fluidRow(
+                                   column(3,checkboxGroupInput("Lorenz", "Variables to show:",
+                                                               c("Earning" = "TotalEarning",
+                                                                 "Expense" = "TotalExpense"),
+                                                               selected = "TotalEarning")),
+                                   column(9,shinycssloaders::withSpinner(plotlyOutput("LorenzCurve")))
+                                   
+                                 )),
+                        tabPanel("Participant Details",
+                                 fluidRow(
+                                   
+                                   
+                                   
+                                   
+                                   column(3,selectInput(inputId = "Months", 
+                                                        label =   "Select the Month",
+                                                        c("Mar 2022"="Mar 2022",
+                                                          "Apr 2022"="Apr 2022",
+                                                          "May 2022"="May 2022",
+                                                          "Jun 2022"="Jun 2022",
+                                                          "Jul 2022"="Jul 2022",
+                                                          "Aug 2022"="Aug 2022",
+                                                          "Sep 2022"="Sep 2022",
+                                                          "Oct 2022"="Oct 2022",
+                                                          
+                                                          "Nov 2022" = "Nov 2022",
+                                                          "Dec 2022" = "Dec 2022",
+                                                          "Jan 2023" = "Jan 2023",
+                                                          "Feb 2023" = "Feb 2023",
+                                                          "Mar 2023"="Mar 2023",
+                                                          "Apr 2023"="Apr 2023",
+                                                          "May 2023"="May 2023"
+                                                        ),
+                                                        multiple=TRUE,
+                                                        selected = "Nov 2022"))
+                                 ),
+                                 
+                                 
+                                 # fluidRow(
+                                 #   column(3,checkboxGroupInput("category", "Categories:",
+                                 #                               c("Education" = "Education",
+                                 #                                 "Food" = "Food",
+                                 #                                 "Recreation" = "Recreation",
+                                 #                                 "Shelter" = "Shelter"),
+                                 #                               selected = "Education")),
+                                 #   column(9,plotlyOutput("ExpensesTrellis"))
+                                 #   
+                                 # ),
+                                 fluidRow(
+                                   column(12,shinycssloaders::withSpinner(reactableOutput("WagesExpenseDashboard", 
+                                                                                          width = "auto", 
+                                                                                          height = "auto", 
+                                                                                          inline = FALSE)))
+                                 )),
+                        tabPanel("Expenses",
+                                 fluidRow(
+                                   column(3,selectInput(inputId = "categorySelected", 
+                                                        label =   "Select the Category",
+                                                        c("Education" = "Education",
+                                                          "Food" = "Food",
+                                                          "Recreation" = "Recreation",
+                                                          "Shelter" = "Shelter"),
+                                                        multiple=TRUE,
+                                                        selected = c("Food","Education","Shelter","Recreation"))),
+                                   column(3,selectInput(inputId = "Week", 
+                                                        label =   "Select the Week",
+                                                        c("Monday"="Monday","Tuesday"="Tuesday",
+                                                          "Wednesday"="Wednesday","Thursday"="Thursday",
+                                                          "Friday"="Friday","Saturday"="Saturday","Sunday"="Sunday"),
+                                                        multiple=TRUE,
+                                                        selected = c("Monday","Tuesday",
+                                                                     "Wednesday","Thursday",
+                                                                     "Friday","Saturday","Sunday"))),
+                                   
+                                   
+                                   column(12,shinycssloaders::withSpinner(plotOutput("HeatMap")))
+                                 ),
+                        )
+                        
+                        # fluidRow(
+                        #   column(12,plotOutput("FinLocation")),
+                        
+                        
+                        
+                        
+                        
+                        
+                        #mainPanel(
+                        #  uiOutput("CoordinatedPlot"),
+                        #  width = "100%", height = "400px"
+                        #),
+                        
+                        
+                        
                         
                       )),
-                      tabPanel("Participant Details",
-                      fluidRow(
-                        
-          
-                        
-                        
-                        column(3,selectInput(inputId = "Months", 
-                                             label =   "Select the Month",
-                                             c("Mar 2022"="Mar 2022",
-                                              "Apr 2022"="Apr 2022",
-                                              "May 2022"="May 2022",
-                                              "Jun 2022"="Jun 2022",
-                                              "Jul 2022"="Jul 2022",
-                                              "Aug 2022"="Aug 2022",
-                                              "Sep 2022"="Sep 2022",
-                                              "Oct 2022"="Oct 2022",
-                                
-                                               "Nov 2022" = "Nov 2022",
-                                               "Dec 2022" = "Dec 2022",
-                                               "Jan 2023" = "Jan 2023",
-                                               "Feb 2023" = "Feb 2023",
-                                              "Mar 2023"="Mar 2023",
-                                              "Apr 2023"="Apr 2023",
-                                              "May 2023"="May 2023"
-                                              ),
-                                             multiple=TRUE,
-                                             selected = "Nov 2022"))
-                      ),
-                      
-                      
-                      # fluidRow(
-                      #   column(3,checkboxGroupInput("category", "Categories:",
-                      #                               c("Education" = "Education",
-                      #                                 "Food" = "Food",
-                      #                                 "Recreation" = "Recreation",
-                      #                                 "Shelter" = "Shelter"),
-                      #                               selected = "Education")),
-                      #   column(9,plotlyOutput("ExpensesTrellis"))
-                      #   
-                      # ),
-                      fluidRow(
-                        column(12,shinycssloaders::withSpinner(reactableOutput("WagesExpenseDashboard", 
-                                                  width = "auto", 
-                                                  height = "auto", 
-                                                  inline = FALSE)))
-                      )),
-                      tabPanel("Expenses",
-                      fluidRow(
-                        column(3,selectInput(inputId = "categorySelected", 
-                                             label =   "Select the Category",
-                                             c("Education" = "Education",
-                                               "Food" = "Food",
-                                               "Recreation" = "Recreation",
-                                               "Shelter" = "Shelter"),
-                                             multiple=TRUE,
-                                             selected = c("Food","Education","Shelter","Recreation"))),
-                        column(3,selectInput(inputId = "Week", 
-                                             label =   "Select the Week",
-                                             c("Monday"="Monday","Tuesday"="Tuesday",
-                                               "Wednesday"="Wednesday","Thursday"="Thursday",
-                                               "Friday"="Friday","Saturday"="Saturday","Sunday"="Sunday"),
-                                             multiple=TRUE,
-                                             selected = c("Monday","Tuesday",
-                                                          "Wednesday","Thursday",
-                                                          "Friday","Saturday","Sunday"))),
-                        
-                        
-                        column(12,shinycssloaders::withSpinner(plotOutput("HeatMap")))
-                      ),
-                      )
-                      
-                      # fluidRow(
-                      #   column(12,plotOutput("FinLocation")),
-                      
-                      
-                      
-                      
-                      
-                      
-                      #mainPanel(
-                      #  uiOutput("CoordinatedPlot"),
-                      #  width = "100%", height = "400px"
-                      #),
-                      
-                      
-                      
-                      
-             )),
              
              tabPanel("Similarities between groups",
                       titlePanel("Can we find some similarity?"),
                       tabsetPanel(
                         tabPanel("Interest Groups",
-                      fluidRow(column(12,shinycssloaders::withSpinner(reactableOutput("GroupsDashboard", 
-                                                         width = "auto", 
-                                                         height = "auto", 
-                                                         inline = FALSE)))),
-                      fluidRow(
-                        column(3,
-                               selectInput("InterestGroup", "Interest Group",
-                                           c("A" = "A",
-                                             "B" = "B",
-                                             "C" = "C",
-                                             "D" = "D",
-                                             "E"="E",
-                                             "F"="F",
-                                             "G"="G",
-                                             "H"="H",
-                                             "I"="I"),
-                                           multiple = TRUE,
-                                           selected = c("A" = "A",
+                                 fluidRow(column(12,shinycssloaders::withSpinner(reactableOutput("GroupsDashboard", 
+                                                                                                 width = "auto", 
+                                                                                                 height = "auto", 
+                                                                                                 inline = FALSE)))),
+                                 fluidRow(
+                                   column(3,
+                                          selectInput("InterestGroup", "Interest Group",
+                                                      c("A" = "A",
                                                         "B" = "B",
                                                         "C" = "C",
                                                         "D" = "D",
@@ -334,30 +324,40 @@ ui <- navbarPage(
                                                         "F"="F",
                                                         "G"="G",
                                                         "H"="H",
-                                                        "I"="I"))),
-                        
-                        
-                        column(9,shinycssloaders::withSpinner(plotOutput("InterestGroups"))))),
-                      tabPanel("Cluster Analysis",
-                      fluidRow(
-                        column(3,selectInput(inputId = "category", 
-                                             label =   "Select the Category",
-                                             c("Education" = "Education",
-                                               "Food" = "Food",
-                                               "Recreation" = "Recreation",
-                                               "Shelter" = "Shelter"),
-                                             multiple=TRUE,
-                                             selected = c("Food","Education"))),
-                        column(9,shinycssloaders::withSpinner(plotlyOutput("HeatMapGroup")))
-                        
-                      )))
+                                                        "I"="I"),
+                                                      multiple = TRUE,
+                                                      selected = c("A" = "A",
+                                                                   "B" = "B",
+                                                                   "C" = "C",
+                                                                   "D" = "D",
+                                                                   "E"="E",
+                                                                   "F"="F",
+                                                                   "G"="G",
+                                                                   "H"="H",
+                                                                   "I"="I"))),
+                                   
+                                   
+                                   column(9,shinycssloaders::withSpinner(plotOutput("InterestGroups"))))),
+                        tabPanel("Cluster Analysis",
+                                 fluidRow(
+                                   column(3,selectInput(inputId = "category", 
+                                                        label =   "Select the Category",
+                                                        c("Education" = "Education",
+                                                          "Food" = "Food",
+                                                          "Recreation" = "Recreation",
+                                                          "Shelter" = "Shelter"),
+                                                        multiple=TRUE,
+                                                        selected = c("Food","Education"))),
+                                   column(9,shinycssloaders::withSpinner(plotlyOutput("HeatMapGroup")))
+                                   
+                                 )))
                       
                       
              )
              
   ),
-
-navbarMenu("Employment & Turnover",
+  
+  navbarMenu("Employment & Turnover",
              tabPanel("Turnover Analysis",
                       fluidPage(
                         titlePanel("What is the impact of job switch among participants ?"),
@@ -380,13 +380,13 @@ navbarMenu("Employment & Turnover",
                                        fluidRow(
                                          box("Commute route from home to work before job change (Marker- Ex Employer Location)",
                                              shinycssloaders::withSpinner(plotOutput(outputId = "befRoute",
-                                                        width = 500,
-                                                        height = 500),
-                                         )),
+                                                                                     width = 500,
+                                                                                     height = 500),
+                                             )),
                                          box("Commute route from home to work after job change  (Marker- New Employer Location)",
                                              shinycssloaders::withSpinner(plotOutput(outputId  = "aftRoute",
-                                                        width = 500,
-                                                        height = 500))
+                                                                                     width = 500,
+                                                                                     height = 500))
                                          )
                                        )
                                        
@@ -397,19 +397,19 @@ navbarMenu("Employment & Turnover",
                                          width = 2,
                                          #height = 50,
                                          radioButtons(inputId = "groupbyCategory", 
-                                                            label =   "Choose Category :",
-                                                            choices =  c("Education Level" = "educationLevel",
-                                                                         "Household Size" = "householdSize",
-                                                                         "Kids" = "haveKids",
-                                                                         "Interest Group" = "interestGroup",
-                                                                         "Age Group" = "ageGroup"),
-                                                            selected = "interestGroup"
+                                                      label =   "Choose Category :",
+                                                      choices =  c("Education Level" = "educationLevel",
+                                                                   "Household Size" = "householdSize",
+                                                                   "Kids" = "haveKids",
+                                                                   "Interest Group" = "interestGroup",
+                                                                   "Age Group" = "ageGroup"),
+                                                      selected = "interestGroup"
                                          )),
                                        mainPanel(width = 25,
                                                  box(
                                                    shinycssloaders::withSpinner(plotOutput("barPayPlot",
-                                                                width = "900px")))
-                                                                #height = "500px"))
+                                                                                           width = "900px")))
+                                                 #height = "500px"))
                                        ),
                                        
                                        DT::dataTableOutput(outputId = "barPayPlotTable")
@@ -468,7 +468,7 @@ navbarMenu("Employment & Turnover",
                                            label = "Plot title",
                                            placeholder = "Enter text to be used as plot title"),
                                          actionButton("goButton", "Go!"),
-                                       
+                                         
                                          checkboxInput(inputId = "showData",
                                                        label = "Show data table",
                                                        value = TRUE)
@@ -477,7 +477,7 @@ navbarMenu("Employment & Turnover",
                                        mainPanel(width = 15,
                                                  box(
                                                    shinycssloaders::withSpinner(plotlyOutput("rainPlot",
-                                                              height = "400px")))
+                                                                                             height = "400px")))
                                        ),
                                        
                                        DT::dataTableOutput(outputId = "rainPlotTable")
@@ -510,13 +510,13 @@ navbarMenu("Employment & Turnover",
                                                                  "Light - Dark Purple" = "Purples",
                                                                  "Light - Dark Red" = "Reds"),
                                                      selected = "Blues"),
-                                      
+                                         
                                          sliderInput(inputId = "no.ofemp",
                                                      label = "Choose min. and max. no. of jobs",
                                                      min = 2,
                                                      max = 9,
                                                      value= c(3,7),
-                                                     ),
+                                         ),
                                          box(
                                            width = 15,
                                            height=200,
@@ -1094,7 +1094,7 @@ server <- function(input, output){
     
     
     
-   
+    
     
     
     
@@ -1199,7 +1199,7 @@ server <- function(input, output){
   #   event_data("plotly_click")
   #})   
   
- 
+  
   
   output$rainPlot <- renderPlotly({
     input$goButton
@@ -1290,19 +1290,19 @@ server <- function(input, output){
   output$aTable <- DT::renderDataTable({
     if(input$emp == "left"){
       if(input$showData){
-      
-      DT::datatable(prevEmp_sf %>%
-                      dplyr::select(employerId,no.ofempLeft),
-                    options= list(pageLength = 10),
-                    rownames = FALSE)
+        
+        DT::datatable(prevEmp_sf %>%
+                        dplyr::select(employerId,no.ofempLeft),
+                      options= list(pageLength = 10),
+                      rownames = FALSE)
       }
     }
     else if(input$emp == "joined"){
       if(input$showData){
-      DT::datatable(recntEmp_sf %>%
-                      dplyr::select(employerId,no.ofempShifted),
-                    options= list(pageLength = 10),
-                    rownames = FALSE)
+        DT::datatable(recntEmp_sf %>%
+                        dplyr::select(employerId,no.ofempShifted),
+                      options= list(pageLength = 10),
+                      rownames = FALSE)
       }
     }
   })  
@@ -1384,7 +1384,7 @@ server <- function(input, output){
   
   output$readChart <- renderText("Size of the block - Total Wage\n Colour of the block - Average Wage\n
                                   Read chart as - Employer whose Id is 4734 has 4 jobs and they provide highest wage among other employers who also have 4 jobs")
-                                  
+  
   
   output$treemapTable <- DT::renderDataTable({
     if(input$showData){
@@ -1403,22 +1403,22 @@ server <- function(input, output){
   output$barPayPlot <- renderPlot({
     
     if(input$groupbyCategory == "educationLevel"){
-    
-    #switchEmployeesAllDetails$participantId <- as.character(switchEmployeesAllDetails$participantId)
-    ggplot(switchEmployeesAllDetails,
-                aes(x=educationLevel, y=payDiff))+
-      geom_bar(stat ="identity",aes(fill = payStatus))+
-      scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
-      labs(y= 'Pay\n Difference',title="Change in Wage by Education Level", x='Education Level') +
-      theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
-            axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
-            axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
-      )
+      
+      #switchEmployeesAllDetails$participantId <- as.character(switchEmployeesAllDetails$participantId)
+      ggplot(switchEmployeesAllDetails,
+             aes(x=educationLevel, y=payDiff))+
+        geom_bar(stat ="identity",aes(fill = payStatus))+
+        scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
+        labs(y= 'Pay\n Difference',title="Change in Wage by Education Level", x='Education Level') +
+        theme(axis.title.y=element_text(angle=0), axis.ticks.x=element_blank(),panel.background = element_blank(),
+              axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
+              axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
+        )
     }
     
     else if(input$groupbyCategory == "householdSize"){
       ggplot(switchEmployeesAllDetails,
-                  aes(x=householdSize, y=payDiff))+
+             aes(x=householdSize, y=payDiff))+
         geom_bar(stat="identity", aes(fill = payStatus))+
         scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
         labs(y= 'Pay\n Difference',title="Wage Difference by Household size", x='Household Size') +
@@ -1431,7 +1431,7 @@ server <- function(input, output){
     }
     else if(input$groupbyCategory == "haveKids"){
       ggplot(switchEmployeesAllDetails,
-                  aes(x=haveKids, y=payDiff))+
+             aes(x=haveKids, y=payDiff))+
         geom_bar(stat="identity", aes(fill = payStatus))+
         scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
         labs(y= 'Pay\n Difference',title="Wage Difference by Kids", x='') +
@@ -1439,11 +1439,11 @@ server <- function(input, output){
               axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
               axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
         )
-    
+      
     }
     else if(input$groupbyCategory == "interestGroup"){
       ggplot(switchEmployeesAllDetails,
-                  aes(x=interestGroup, y=payDiff))+
+             aes(x=interestGroup, y=payDiff))+
         geom_bar(stat="identity", aes(fill = payStatus))+
         scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
         labs(y= 'Pay\n Difference',title="Employee Wage Difference by Interest Group", x='Interest Group') +
@@ -1451,12 +1451,12 @@ server <- function(input, output){
               axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
               axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
         )
-    
+      
       
     }
     else if(input$groupbyCategory == "ageGroup"){
       ggplot(switchEmployeesAllDetails,
-                  aes(x=ageGroup, y=payDiff))+
+             aes(x=ageGroup, y=payDiff))+
         geom_bar(stat="identity", aes(fill = payStatus))+
         scale_fill_manual(values=c(`Pay Decrease` ="firebrick1", `Pay Increase` ="steelblue")) +
         labs(y= 'Pay\n Difference',title="Wage Difference among Age Groups", x='Age Group') +
@@ -1464,17 +1464,17 @@ server <- function(input, output){
               axis.line = element_line(color='grey'), plot.title = element_text(hjust = 0.5),
               axis.title.y.left = element_text(vjust = 0.5), axis.text = element_text(face="bold")
         )
-    
+      
       
     }
-  
+    
     
   })
   
   
   
 }
-  
+
 shinyApp(ui = ui, server = server)
-  
+
 
