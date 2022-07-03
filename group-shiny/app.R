@@ -3,19 +3,15 @@
 # packages <- c('shiny', 'shinydashboard', 'shinythemes', 
 #               'tidyverse', 'ggplot2', 'plotly')
 
-packages=c('ggiraph', 'plotly', 'rmarkdown','psych','sf','tmap',
-           'DT', 'patchwork','gglorenz','hrbrthemes','shinydashboard',
-           'gganimate', 'tidyverse','ggthemes','reactable',
-           'readxl', 'gifski', 'gapminder','quantmod','shinythemes',
-           'treemap', 'treemapify','ggridges','zoo','reactablefmtr','crosstalk',
-           'rPackedBar','lubridate','remotes','ggplot2','dplyr','ggstatsplot',
-           'lubridate','shiny','tools','writexl','ggHoriPlot','rsconnect',
-           'heatmaply','ggHoriPlot')
 
+pacman::p_load(ggiraph, plotly, rmarkdown, psych, sf, tmap,
+           DT, patchwork, gglorenz, hrbrthemes, shinydashboard,
+           gganimate, tidyverse, ggthemes, reactable,
+           readxl, gifski, gapminder, quantmod, shinythemes,
+           treemap, treemapify, ggridges, zoo, reactablefmtr, crosstalk,
+           rPackedBar, lubridate, remotes, ggplot2, dplyr, ggstatsplot,
+           lubridate, shiny, tools, writexl, ggHoriPlot, rsconnect)
 
-for (p in packages){
-  library(p, character.only=T)
-}
 
 ########################## Reading the files ########################## 
 
