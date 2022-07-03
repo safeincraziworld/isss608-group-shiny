@@ -47,13 +47,13 @@ jobs<-jobs %>%
   mutate(educationRequirement = factor(jobs$educationRequirement, level = c('Low',     'HighSchoolOrCollege','Bachelors','Graduate'))) 
 
 jobs$weeklypay=as.numeric(jobs$weeklypay)
-saveRDS(jobs,'jobs.rds')
+saveRDS(jobs,"group-shiny/data/Q3/jobs.rds")
 
 participants<- participants %>%
   mutate(jovialityGroup= cut(joviality, breaks =c(-Inf,0.2,0.5,0.8,1),labels=c("Not too Happy","Fairly Happy","Happy","Very Happy"))) %>%
   mutate(ageGroup = cut(age,breaks=c(18,35,55,Inf),labels=c("Young Adult","Middle Age","Older Adult"),
 include.lowest = TRUE))
-saveRDS(participants,'participants.rds')
+
 
 ```
 
@@ -73,7 +73,6 @@ pay_hires <- merge(x = hires, y = employerpay, by = "employerId", all = TRUE) %>
   dplyr::select(employerId,`No. of employees`, employeepay) %>%
   arrange(employerId)
 
-saveRDS(pay_hires,'pay_hires.rds')
 
 ```
 
@@ -85,19 +84,17 @@ work_home <- travel %>%
   group_by(participantId,travelEndLocationId) %>%
   tally() %>%
   dplyr::select('participantId','travelEndLocationId') 
-saveRDS(work_home,'work_home.rds')
 
 work <- inner_join(x = work_home, y = emp, by= c("travelEndLocationId"="employerId" )) %>%
   dplyr::select('participantId','travelEndLocationId') %>%
   group_by(participantId) %>%
   tally() %>%
   dplyr::rename('numberofplacesworked'='n')
-saveRDS(work,'work.rds')
 
 workinmoreplaces <- work %>%
   filter(numberofplacesworked > 1) %>%
   arrange(participantId)
-saveRDS(workinmoreplaces,'workinmoreplaces.rds')
+
 
 work_home_filt <- travel %>%
   filter(purpose == "Work/Home Commute") %>%
@@ -106,7 +103,7 @@ work_home_filt <- travel %>%
   dplyr::select('participantId','travelEndLocationId') %>%
   filter(travelEndLocationId
  %in% emp$employerId & participantId %in% workinmoreplaces$participantId)
-saveRDS(work_home_filt,'work_home_filt.rds')
+
 
 empWorkinMultiplePlaces <- travel %>%
   mutate(StartDate = as_date(travelStartTime)) %>%
@@ -121,19 +118,18 @@ empWorkinMultiplePlaces <- travel %>%
    filter(StartDate == min(StartDate) | StartDate == max(StartDate)) %>%
    ungroup
  
- saveRDS(empWorkinMultiplePlaces,'empWorkinMultiplePlaces.rds')
  
  empWorkinMultiplePlaces_latest <- empWorkinMultiplePlaces %>%
    group_by(participantId) %>%
    slice(which.max(StartDate)) %>%
    dplyr::rename ("recent_employer" = "travelEndLocationId")
- saveRDS(empWorkinMultiplePlaces_latest,'empWorkinMultiplePlaces_latest.rds')
+ 
  
  empWorkinMultiplePlaces_previous <- empWorkinMultiplePlaces %>%
    group_by(participantId) %>%
    slice(which.min(StartDate)) %>%
    dplyr::rename ("previous_employer" = "travelEndLocationId")
- saveRDS(empWorkinMultiplePlaces_previous,'empWorkinMultiplePlaces_previous.rds')
+
 ```
 
 ```{r}
@@ -142,14 +138,14 @@ empWorkinMultiplePlaces_latest_groupby <- empWorkinMultiplePlaces_latest %>%
   tally() %>%
   dplyr::rename("no.ofempShifted" = "n") %>%
   arrange(desc(`no.ofempShifted`))
-saveRDS(empWorkinMultiplePlaces_latest_groupby,'empWorkinMultiplePlaces_latest_groupby.rds')
+
 
 empWorkinMultiplePlaces_previous_groupby <- empWorkinMultiplePlaces_previous %>%
   group_by(previous_employer) %>%
   tally() %>%
   dplyr::rename("no.ofempLeft" = "n") %>%
   arrange(desc(`no.ofempLeft`))
-saveRDS(empWorkinMultiplePlaces_previous_groupby,'empWorkinMultiplePlaces_previous_groupby.rds')
+
 
 ```
 
@@ -181,31 +177,28 @@ transitionTable <- inner_join(x=empWorkinMultiplePlaces_previous ,
                               y=empWorkinMultiplePlaces_latest,
                               by = "participantId") %>%
   dplyr::select(participantId,previous_employer,recent_employer)
-saveRDS(transitionTable,'transitionTable.rds')
 
 transitionEmpDetails <- participants %>%
   filter(participantId %in% transitionTable$participantId)
-saveRDS(transitionEmpDetails,'transitionEmpDetails.rds')
 
 ```
 ### Mapping
 ```{r}
 employers <- employers %>% 
   mutate(across(employerId, as.integer))
-saveRDS(employers,'employers.rds')
 
 
 prevEmp_sf <- employers %>%
   filter(employerId %in% transitionTable$previous_employer ) %>%
   mutate(empWorkinMultiplePlaces_previous_groupby$no.ofempLeft) %>%
   dplyr::rename("no.ofempLeft" = "empWorkinMultiplePlaces_previous_groupby$no.ofempLeft")
-saveRDS(prevEmp_sf,'prevEmp_sf.rds')
+saveRDS(prevEmp_sf,"group-shiny/data/Q3/prevEmp_sf.rds")
 
 recntEmp_sf <- employers %>%
   filter(employerId %in% transitionTable$recent_employer )%>%
   mutate(empWorkinMultiplePlaces_latest_groupby$no.ofempShifted) %>%
   dplyr::rename("no.ofempShifted" = "empWorkinMultiplePlaces_latest_groupby$no.ofempShifted")
-saveRDS(recntEmp_sf,'recntEmp_sf.rds')
+saveRDS(recntEmp_sf,"group-shiny/data/Q3/recntEmp_sf.rds")
 ```
 
 ### Switch employee all details
@@ -234,17 +227,9 @@ switchEmployeesAllDetails <- switchEmployeesAllDetails %>%
             payDiff < 0 ~ "Pay Decrease",
             TRUE ~ "Same Pay"))
  
-saveRDS(switchEmployeesAllDetails,'switchEmployeesAllDetails.rds')
-
+saveRDS(switchEmployeesAllDetails,"group-shiny/data/Q3/switchEmployeesAllDetails.rds")
 
 ```
-
-
-
-
-
-
-
 
 ```{r,echo=FALSE, fig.show='hide'}
 
@@ -278,9 +263,6 @@ logs_path <- logs_selected %>%
   mutate(date = as_date(m)) %>%
   st_cast("LINESTRING")
 
-saveRDS(logs_path,'logs_path.rds')
-
-
 
 ```
 ### map route before job switch
@@ -293,24 +275,9 @@ logs_path_PrevJob <-logs_path %>%
            empWorkinMultiplePlaces_previous$StartDate) %>%
   slice(which.min(date)) %>%
   select(participantId,date,currentLocation)
-saveRDS(logs_path_PrevJob,'logs_path_PrevJob.rds')
+saveRDS(logs_path_PrevJob,"group-shiny/data/Q3/logs_path_PrevJob.rds")
 ```
-```{r}
 
-tmap_mode("plot")
-tm_shape(buildings)+
-tm_polygons(col = "grey60",
-size = 1,
-border.col = "black",
-border.lwd = 1) +
-tm_shape(logs_path_PrevJob) +
-tm_lines(col = "red") +
-tm_layout(main.title = "Previous Job Route",
-            main.title.position = "center",
-            main.title.size = 1,
-            legend.show = FALSE)
-  
-```
 ### map route after job switch
 
 ```{r}
@@ -321,24 +288,8 @@ logs_path_RecJob <-logs_path %>%
            empWorkinMultiplePlaces_latest$StartDate) %>%
   slice(which.max(date)) %>%
   select(participantId,date,currentLocation)
-saveRDS(logs_path_RecJob,'logs_path_RecJob.rds')
+saveRDS(logs_path_RecJob,"group-shiny/data/Q3/logs_path_RecJob.rds")
   # filter(participantId == 44)
-```
-```{r}
-
-tmap_mode("plot")
-tm_shape(buildings)+
-tm_polygons(col = "grey60",
-size = 1,
-border.col = "black",
-border.lwd = 1) +
-tm_shape(logs_path_RecJob) +
-tm_lines(col = "red") +
-tm_layout(main.title = "Latest Job Route",
-            main.title.position = "center",
-            main.title.size = 1,
-            legend.show = TRUE)
-  
 ```
 
 ### Employment Pattern
@@ -351,7 +302,7 @@ no.ofjobs <- jobs %>%
             avgWage = mean(hourlyRate)) %>%
   dplyr::rename('Average Wage' = 'avgWage') %>%
   mutate(label = paste(no.ofjobs, 'Jobs'))
-saveRDS(no.ofjobs,'no.ofjobs.rds')
+saveRDS(no.ofjobs,"group-shiny/data/Q3/no.ofjobs.rds")
 
 no.ofjobs_table <- jobs %>% 
   group_by(employerId) %>%
@@ -362,7 +313,7 @@ no.ofjobs_table <- jobs %>%
   dplyr::rename('Average Wage' = 'avgWage') %>%
   mutate(label = paste(no.ofjobs, 'Jobs')) %>%
   dplyr::select(employerId, no.ofjobs, `Average Wage`, eduLevel)
-saveRDS(no.ofjobs_table,'no.ofjobs_table.rds')
+saveRDS(no.ofjobs_table,"group-shiny/data/Q3/no.ofjobs_table.rds")
 
 ```
 
