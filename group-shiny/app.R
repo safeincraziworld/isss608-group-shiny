@@ -75,7 +75,7 @@ morePlacesPayChange <- left_join(x = alias,
 ui <- navbarPage(
   title = "Financial Health of the city",
   fluid = TRUE,
-  theme=shinytheme("united"),
+  theme=shinytheme("cosmo"),
   id = "navbarID",
   tabPanel("User Guide"),
   navbarMenu("Businesses in Town",
